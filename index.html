@@ -254,6 +254,9 @@ async function loadApp(user){
   currentProfile=profile;
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('main-app').style.display='block';
+  document.getElementById('new-course-btn').style.display='none';
+  document.getElementById('tab-staff').style.display='none';
+  document.getElementById('tab-progress').style.display='none';
   document.getElementById('user-name-display').textContent=(profile?profile.name:user.email)+(currentProfile&&currentProfile.is_admin?' (Admin)':'');
   if(currentProfile&&currentProfile.is_admin){
     document.getElementById('new-course-btn').style.display='';
