@@ -325,7 +325,7 @@ async function openCourse(id){
       if(s.type==='file')body+='<button class="btn btn-sm" style="margin-top:8px;" onclick="openFileUploader('+s.id+')"><i class="ti ti-upload"></i> Upload file</button>'+(s.url?'<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm" style="margin-left:6px;"><i class="ti ti-external-link"></i> View</a>':'');
     } else {
       if(s.type==='video'&&s.url)body+='<div style="margin-top:8px;"><a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i> Watch on YouTube</a></div>';
-      if(s.type==='text'&&s.content)body+='<div style="font-size:13px;color:var(--text2);margin-top:6px;line-height:1.7;">'+esc(s.content)+'</div>';
+      if(s.type==='text'&&s.content)body+='<div style="font-size:13px;color:var(--text2);margin-top:6px;line-height:1.7;">'+esc(s.content).replace(/\n/g,'<br>')+'</div>';
       if(s.type==='file'&&s.url)body+='<div style="margin-top:8px;"><a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-download"></i> View / Download</a></div>';
       if(s.type==='quiz'){
         if(qr)body+='<div class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-top:6px;">'+(qr.passed?'Passed '+qr.score+'%':'Failed '+qr.score+'%')+'</div><button class="btn btn-sm" style="margin-top:8px;" onclick="openQuiz('+s.id+','+id+')">Retake quiz</button>';
