@@ -206,10 +206,7 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--
           <label class="form-label">Date of classes</label>
           <input class="form-input" type="date" id="dr-date">
         </div>
-        <div class="form-group">
-          <label class="form-label">Class times (e.g. 4:00pm, 5:30pm, 7:00pm)</label>
-          <input class="form-input" type="text" id="dr-times" placeholder="List all class times you taught today">
-        </div>
+
         <div class="divider"></div>
         <div class="form-group">
           <label class="form-label">Did you make your social media post today?</label>
@@ -688,7 +685,6 @@ async function submitDailyReport(){
   var report={
     user_id:currentUser.id,
     report_date:date,
-    class_times:document.getElementById('dr-times').value,
     social_media_post:document.getElementById('dr-social').value,
     social_media_files:fileUrls,
     attendance_followup:document.getElementById('dr-attendance').value,
@@ -708,7 +704,7 @@ async function submitDailyReport(){
   } else {
     document.getElementById('dr-status').innerHTML='<div class="alert alert-success"><i class="ti ti-circle-check"></i> Report submitted successfully!</div>';
     // reset form
-    ['dr-times','dr-sick','dr-above','dr-improve','dr-injuries','dr-comments'].forEach(function(id){document.getElementById(id).value='';});
+    ['dr-sick','dr-above','dr-improve','dr-injuries','dr-comments'].forEach(function(id){document.getElementById(id).value='';});
     ['dr-social','dr-attendance'].forEach(function(id){document.getElementById(id).value='';});
     document.getElementById('dr-families').value='';
     ['m1','m2','m3','m4'].forEach(function(id){document.getElementById(id).checked=false;});
@@ -736,7 +732,6 @@ async function loadReportLog(){
         '<span class="badge badge-info">'+esc(r.report_date)+'</span>'+
       '</div>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">'+
-        rField('Class times',r.class_times)+
         rField('Social media',r.social_media_post)+
         rField('Attendance followup',r.attendance_followup)+
         rField('Families connected',r.families_connected)+
