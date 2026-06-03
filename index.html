@@ -5,687 +5,551 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Boundless Dojo Training</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #ffffff;
-    --bg2: #f5f5f4;
-    --bg3: #efefed;
-    --text: #1a1a18;
-    --text2: #6b6b67;
-    --text3: #9b9b96;
-    --border: rgba(0,0,0,0.12);
-    --border2: rgba(0,0,0,0.22);
-    --radius: 8px;
-    --radius-lg: 12px;
-    --success-bg: #eaf3de;
-    --success-text: #3b6d11;
-    --warning-bg: #faeeda;
-    --warning-text: #854f0b;
-    --info-bg: #e6f1fb;
-    --info-text: #185fa5;
-    --danger-bg: #fcebeb;
-    --danger-text: #a32d2d;
-    --danger-border: rgba(163,45,45,0.3);
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#ffffff;--bg2:#f5f5f4;--bg3:#efefed;
+  --text:#1a1a18;--text2:#6b6b67;--text3:#9b9b96;
+  --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);
+  --radius:8px;--radius-lg:12px;
+  --success-bg:#eaf3de;--success-text:#3b6d11;
+  --warning-bg:#faeeda;--warning-text:#854f0b;
+  --info-bg:#e6f1fb;--info-text:#185fa5;
+  --danger-bg:#fcebeb;--danger-text:#a32d2d;
+  --danger-border:rgba(163,45,45,0.3);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;
+    --text:#f0f0ec;--text2:#a0a09a;--text3:#6b6b65;
+    --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);
+    --success-bg:#173404;--success-text:#c0dd97;
+    --warning-bg:#412402;--warning-text:#fac775;
+    --info-bg:#042c53;--info-text:#b5d4f4;
+    --danger-bg:#501313;--danger-text:#f7c1c1;
+    --danger-border:rgba(247,193,193,0.3);
   }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1a;
-      --bg2: #252523;
-      --bg3: #2e2e2b;
-      --text: #f0f0ec;
-      --text2: #a0a09a;
-      --text3: #6b6b65;
-      --border: rgba(255,255,255,0.1);
-      --border2: rgba(255,255,255,0.2);
-      --success-bg: #173404;
-      --success-text: #c0dd97;
-      --warning-bg: #412402;
-      --warning-text: #fac775;
-      --info-bg: #042c53;
-      --info-text: #b5d4f4;
-      --danger-bg: #501313;
-      --danger-text: #f7c1c1;
-      --danger-border: rgba(247,193,193,0.3);
-    }
-  }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg3);
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 15px;
-    line-height: 1.5;
-  }
-
-  .topbar {
-    background: var(--bg);
-    border-bottom: 0.5px solid var(--border);
-    padding: 0 1.5rem;
-    height: 54px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
-  .logo { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-  .logo i { font-size: 20px; color: var(--text2); }
-  .user-pill {
-    font-size: 13px; color: var(--text2);
-    background: var(--bg2); padding: 5px 12px;
-    border-radius: 20px; border: 0.5px solid var(--border);
-    cursor: pointer; display: flex; align-items: center; gap: 6px;
-    transition: border-color 0.15s;
-  }
-  .user-pill:hover { border-color: var(--border2); }
-
-  .nav-tabs {
-    background: var(--bg);
-    border-bottom: 0.5px solid var(--border);
-    display: flex;
-    padding: 0 1.5rem;
-  }
-  .nav-tab {
-    padding: 11px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    color: var(--text2);
-    margin-bottom: -0.5px;
-    display: flex; align-items: center; gap: 7px;
-    transition: color 0.15s;
-  }
-  .nav-tab.active { border-bottom-color: var(--text); color: var(--text); font-weight: 500; }
-  .nav-tab:hover:not(.active) { color: var(--text); }
-
-  .content { padding: 1.5rem; max-width: 860px; margin: 0 auto; }
-
-  .page { display: none; }
-  .page.active { display: block; }
-
-  .section-header {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    margin-bottom: 1.25rem; gap: 1rem;
-  }
-  .section-title { font-size: 17px; font-weight: 600; }
-  .section-sub { font-size: 13px; color: var(--text2); margin-top: 3px; }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 15px; font-size: 13px; border-radius: var(--radius);
-    border: 0.5px solid var(--border2);
-    background: var(--bg);
-    cursor: pointer; color: var(--text);
-    transition: background 0.15s, border-color 0.15s;
-    font-family: inherit;
-  }
-  .btn:hover { background: var(--bg2); }
-  .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .btn-primary:hover { opacity: 0.85; background: var(--text); }
-  .btn-sm { padding: 5px 10px; font-size: 12px; }
-  .btn-danger { color: var(--danger-text); border-color: var(--danger-border); }
-  .btn-danger:hover { background: var(--danger-bg); }
-
-  .card {
-    background: var(--bg);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1rem 1.25rem;
-    margin-bottom: 0.75rem;
-    cursor: pointer;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .card:hover { border-color: var(--border2); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  .card-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-  .card-title { font-size: 15px; font-weight: 500; }
-  .card-meta { font-size: 13px; color: var(--text2); margin-top: 5px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-
-  .badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500;
-  }
-  .badge-success { background: var(--success-bg); color: var(--success-text); }
-  .badge-warning { background: var(--warning-bg); color: var(--warning-text); }
-  .badge-info { background: var(--info-bg); color: var(--info-text); }
-  .badge-neutral { background: var(--bg2); color: var(--text2); }
-
-  .progress-bar-wrap { height: 4px; background: var(--bg3); border-radius: 2px; margin-top: 10px; }
-  .progress-bar { height: 4px; border-radius: 2px; background: var(--text); transition: width 0.4s ease; }
-
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
-  .metric-card { background: var(--bg2); border-radius: var(--radius); padding: 1rem 1.25rem; }
-  .metric-label { font-size: 12px; color: var(--text2); margin-bottom: 5px; }
-  .metric-value { font-size: 24px; font-weight: 600; }
-
-  .form-group { margin-bottom: 1rem; }
-  .form-label { font-size: 13px; color: var(--text2); margin-bottom: 5px; display: block; }
-  .form-input {
-    width: 100%; padding: 9px 12px; font-size: 14px;
-    border: 0.5px solid var(--border2); border-radius: var(--radius);
-    background: var(--bg); color: var(--text); font-family: inherit;
-    transition: border-color 0.15s;
-  }
-  .form-input:focus { outline: none; border-color: var(--text); }
-  textarea.form-input { resize: vertical; min-height: 80px; }
-
-  .section-item {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 10px 12px;
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 8px;
-    background: var(--bg);
-  }
-  .section-item-type {
-    width: 30px; height: 30px; border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 15px; flex-shrink: 0; margin-top: 1px;
-  }
-  .type-video { background: var(--info-bg); color: var(--info-text); }
-  .type-text { background: var(--success-bg); color: var(--success-text); }
-  .section-item-body { flex: 1; min-width: 0; }
-  .section-item-name { font-size: 14px; font-weight: 500; }
-  .section-item-sub { font-size: 12px; color: var(--text2); margin-top: 3px; }
-
-  .modal-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.4);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 200; padding: 1rem;
-  }
-  .modal {
-    background: var(--bg);
-    border-radius: var(--radius-lg);
-    border: 0.5px solid var(--border);
-    padding: 1.5rem;
-    width: 100%; max-width: 480px;
-    max-height: 90vh; overflow-y: auto;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-  }
-  .modal-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1.25rem;
-  }
-  .modal-title { font-size: 16px; font-weight: 600; }
-  .modal-close {
-    cursor: pointer; color: var(--text2); font-size: 20px;
-    border: none; background: none; padding: 2px; line-height: 1;
-  }
-  .modal-close:hover { color: var(--text); }
-
-  .staff-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 0;
-    border-bottom: 0.5px solid var(--border);
-  }
-  .staff-row:last-child { border-bottom: none; }
-  .avatar {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: var(--info-bg); display: flex; align-items: center;
-    justify-content: center; font-size: 12px; font-weight: 600;
-    color: var(--info-text); flex-shrink: 0;
-  }
-  .staff-name { font-size: 14px; font-weight: 500; flex: 1; }
-  .staff-role { font-size: 12px; color: var(--text2); }
-
-  .divider { height: 0.5px; background: var(--border); margin: 1rem 0; }
-
-  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text2); font-size: 14px; }
-  .empty-state i { font-size: 36px; display: block; margin-bottom: 0.75rem; opacity: 0.35; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; padding: 8px 10px; font-weight: 400; color: var(--text2); border-bottom: 0.5px solid var(--border); }
-  td { padding: 8px 10px; border-bottom: 0.5px solid var(--border); }
-  tr:last-child td { border-bottom: none; }
-
-  .progress-table-wrap {
-    background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg); overflow: hidden;
-  }
-  .overflow-x { overflow-x: auto; }
-
-  input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--text); }
-
-  .done-btn-active {
-    background: var(--success-bg) !important;
-    color: var(--success-text) !important;
-    border-color: rgba(59,109,17,0.3) !important;
-  }
-
-  @media (max-width: 600px) {
-    .content { padding: 1rem; }
-    .grid-2 { grid-template-columns: 1fr; }
-    .section-header { flex-direction: column; }
-    .nav-tab span { display: none; }
-  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5;}
+.topbar{background:var(--bg);border-bottom:0.5px solid var(--border);padding:0 1.5rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.logo{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.logo i{font-size:20px;color:var(--text2);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.user-info{font-size:13px;color:var(--text2);}
+.nav-tabs{background:var(--bg);border-bottom:0.5px solid var(--border);display:flex;padding:0 1.5rem;overflow-x:auto;}
+.nav-tab{padding:11px 16px;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);margin-bottom:-0.5px;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:color 0.15s;}
+.nav-tab.active{border-bottom-color:var(--text);color:var(--text);font-weight:500;}
+.nav-tab:hover:not(.active){color:var(--text);}
+.content{padding:1.5rem;max-width:900px;margin:0 auto;}
+.page{display:none;}.page.active{display:block;}
+.section-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:1rem;flex-wrap:wrap;}
+.section-title{font-size:17px;font-weight:600;}
+.section-sub{font-size:13px;color:var(--text2);margin-top:3px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);cursor:pointer;color:var(--text);transition:background 0.15s;font-family:inherit;}
+.btn:hover{background:var(--bg2);}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-primary{background:var(--text);color:var(--bg);border-color:var(--text);}
+.btn-primary:hover{opacity:0.85;background:var(--text);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.btn-danger{color:var(--danger-text);border-color:var(--danger-border);}
+.btn-danger:hover{background:var(--danger-bg);}
+.btn-success{background:var(--success-bg);color:var(--success-text);border-color:rgba(59,109,17,0.3);}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:0.75rem;transition:border-color 0.15s;}
+.card.clickable{cursor:pointer;}
+.card.clickable:hover{border-color:var(--border2);}
+.card-title{font-size:15px;font-weight:500;}
+.card-meta{font-size:13px;color:var(--text2);margin-top:5px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;}
+.badge-success{background:var(--success-bg);color:var(--success-text);}
+.badge-warning{background:var(--warning-bg);color:var(--warning-text);}
+.badge-info{background:var(--info-bg);color:var(--info-text);}
+.badge-neutral{background:var(--bg2);color:var(--text2);}
+.badge-danger{background:var(--danger-bg);color:var(--danger-text);}
+.progress-bar-wrap{height:4px;background:var(--bg3);border-radius:2px;margin-top:10px;}
+.progress-bar{height:4px;border-radius:2px;background:var(--text);transition:width 0.4s ease;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+.metric-card{background:var(--bg2);border-radius:var(--radius);padding:1rem 1.25rem;}
+.metric-label{font-size:12px;color:var(--text2);margin-bottom:5px;}
+.metric-value{font-size:24px;font-weight:600;}
+.form-group{margin-bottom:1rem;}
+.form-label{font-size:13px;color:var(--text2);margin-bottom:5px;display:block;}
+.form-input{width:100%;padding:9px 12px;font-size:14px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:inherit;transition:border-color 0.15s;}
+.form-input:focus{outline:none;border-color:var(--text);}
+textarea.form-input{resize:vertical;min-height:80px;}
+.section-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;background:var(--bg);}
+.section-type-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:1px;}
+.type-video{background:var(--info-bg);color:var(--info-text);}
+.type-text{background:var(--success-bg);color:var(--success-text);}
+.type-quiz{background:var(--warning-bg);color:var(--warning-text);}
+.type-file{background:var(--bg2);color:var(--text2);}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:1rem;}
+.modal{background:var(--bg);border-radius:var(--radius-lg);border:0.5px solid var(--border);padding:1.5rem;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.modal-title{font-size:16px;font-weight:600;}
+.modal-close{cursor:pointer;color:var(--text2);font-size:20px;border:none;background:none;padding:2px;line-height:1;}
+.modal-close:hover{color:var(--text);}
+.staff-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.staff-row:last-child{border-bottom:none;}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--info-bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--info-text);flex-shrink:0;}
+.divider{height:0.5px;background:var(--border);margin:1rem 0;}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text2);font-size:14px;}
+.empty-state i{font-size:36px;display:block;margin-bottom:0.75rem;opacity:0.35;}
+.quiz-option{display:flex;align-items:center;gap:10px;padding:10px 14px;border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;transition:background 0.15s,border-color 0.15s;}
+.quiz-option:hover{background:var(--bg2);}
+.quiz-option.selected{border-color:var(--info-text);background:var(--info-bg);}
+.quiz-option.correct{border-color:var(--success-text);background:var(--success-bg);}
+.quiz-option.wrong{border-color:var(--danger-text);background:var(--danger-bg);}
+.upload-area{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;}
+.upload-area:hover{border-color:var(--text);background:var(--bg2);}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--text);border-radius:50%;animation:spin 0.6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.alert{padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:1rem;}
+.alert-danger{background:var(--danger-bg);color:var(--danger-text);}
+.alert-success{background:var(--success-bg);color:var(--success-text);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:8px 10px;font-weight:400;color:var(--text2);border-bottom:0.5px solid var(--border);}
+td{padding:8px 10px;border-bottom:0.5px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+.table-wrap{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+.overflow-x{overflow-x:auto;}
+input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--text);}
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.auth-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:400px;}
+.auth-logo{text-align:center;margin-bottom:1.5rem;}
+.auth-logo i{font-size:32px;color:var(--text2);}
+.auth-title{font-size:20px;font-weight:600;text-align:center;margin-bottom:0.25rem;}
+.auth-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:1.5rem;}
+.auth-tabs{display:flex;gap:0;margin-bottom:1.5rem;border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.auth-tab{flex:1;padding:8px;text-align:center;font-size:13px;cursor:pointer;color:var(--text2);transition:background 0.15s;}
+.auth-tab.active{background:var(--text);color:var(--bg);font-weight:500;}
+@media(max-width:600px){
+  .content{padding:1rem;}
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+  .section-header{flex-direction:column;}
+}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="logo">
-    <i class="ti ti-shield-bolt"></i>
-    Boundless Dojo Training
-  </div>
-  <div class="user-pill" onclick="switchRole()">
-    <i class="ti ti-user" style="font-size:14px;"></i>
-    <span id="role-label">Admin view</span>
-    <i class="ti ti-chevron-down" style="font-size:12px;"></i>
+<div id="auth-screen" class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo"><i class="ti ti-shield-bolt"></i></div>
+    <div class="auth-title">Boundless Dojo Training</div>
+    <div class="auth-sub">Sign in to access your training courses</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign in</div>
+      <div class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Create account</div>
+    </div>
+    <div id="auth-error" class="alert alert-danger" style="display:none;"></div>
+    <div id="signin-form">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="si-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="si-password" placeholder="••••••••"></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="signIn()" id="signin-btn"><i class="ti ti-login"></i> Sign in</button>
+    </div>
+    <div id="signup-form" style="display:none;">
+      <div class="form-group"><label class="form-label">Full name</label><input class="form-input" type="text" id="su-name" placeholder="e.g. Sarah Kim"></div>
+      <div class="form-group"><label class="form-label">Role / Position</label><input class="form-input" type="text" id="su-role" placeholder="e.g. Instructor"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="su-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="su-password" placeholder="At least 6 characters"></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="signUp()" id="signup-btn"><i class="ti ti-user-plus"></i> Create account</button>
+    </div>
   </div>
 </div>
 
-<div class="nav-tabs">
-  <div class="nav-tab active" onclick="showPage('courses')" id="tab-courses">
-    <i class="ti ti-books"></i> <span>Courses</span>
+<div id="main-app" style="display:none;">
+  <div class="topbar">
+    <div class="logo"><i class="ti ti-shield-bolt"></i> Boundless Dojo Training</div>
+    <div class="topbar-right">
+      <span class="user-info" id="user-name-display"></span>
+      <button class="btn btn-sm" onclick="signOut()"><i class="ti ti-logout"></i> Sign out</button>
+    </div>
   </div>
-  <div class="nav-tab" onclick="showPage('staff')" id="tab-staff">
-    <i class="ti ti-users"></i> <span>Staff</span>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('courses')" id="tab-courses"><i class="ti ti-books"></i> Courses</div>
+    <div class="nav-tab" onclick="showPage('staff')" id="tab-staff" style="display:none;"><i class="ti ti-users"></i> Staff</div>
+    <div class="nav-tab" onclick="showPage('progress')" id="tab-progress" style="display:none;"><i class="ti ti-chart-bar"></i> Progress</div>
   </div>
-  <div class="nav-tab" onclick="showPage('progress')" id="tab-progress">
-    <i class="ti ti-chart-bar"></i> <span>Progress</span>
+  <div class="content">
+    <div class="page active" id="page-courses">
+      <div class="section-header">
+        <div><div class="section-title">Training Courses</div><div class="section-sub" id="courses-sub">Your assigned training content</div></div>
+        <button class="btn btn-primary" id="new-course-btn" style="display:none;" onclick="openNewCourse()"><i class="ti ti-plus"></i> New Course</button>
+      </div>
+      <div id="course-list"></div>
+    </div>
+    <div class="page" id="page-staff">
+      <div class="section-header">
+        <div><div class="section-title">Staff Members</div><div class="section-sub" id="staff-sub">Manage your team</div></div>
+        <button class="btn btn-primary" onclick="openInviteStaff()"><i class="ti ti-link"></i> Get invite link</button>
+      </div>
+      <div class="card" style="padding:0.25rem 1rem;"><div id="staff-list"></div></div>
+    </div>
+    <div class="page" id="page-progress">
+      <div class="section-header">
+        <div><div class="section-title">Completion Tracker</div><div class="section-sub">Track who has completed each section</div></div>
+        <select class="form-input" style="width:auto;min-width:220px;font-size:13px;padding:7px 10px;" id="progress-course-select" onchange="renderProgress()"></select>
+      </div>
+      <div class="grid-3" id="progress-metrics"></div>
+      <div class="table-wrap"><div class="overflow-x"><table id="progress-table-el"></table></div></div>
+    </div>
   </div>
 </div>
 
-<div class="content">
-
-  <!-- COURSES -->
-  <div class="page active" id="page-courses">
-    <div class="section-header">
-      <div>
-        <div class="section-title">Training Courses</div>
-        <div class="section-sub" id="courses-sub">Build and manage your staff training content</div>
-      </div>
-      <button class="btn btn-primary" id="new-course-btn" onclick="openNewCourse()">
-        <i class="ti ti-plus"></i> New Course
-      </button>
-    </div>
-    <div id="course-list"></div>
-  </div>
-
-  <!-- STAFF -->
-  <div class="page" id="page-staff">
-    <div class="section-header">
-      <div>
-        <div class="section-title">Staff Members</div>
-        <div class="section-sub" id="staff-count-sub">Manage your team</div>
-      </div>
-      <button class="btn btn-primary" id="add-staff-btn" onclick="openAddStaff()">
-        <i class="ti ti-plus"></i> Add Staff
-      </button>
-    </div>
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:0.25rem 1rem;">
-      <div id="staff-list"></div>
-    </div>
-  </div>
-
-  <!-- PROGRESS -->
-  <div class="page" id="page-progress">
-    <div class="section-header">
-      <div>
-        <div class="section-title">Completion Tracker</div>
-        <div class="section-sub">Track who has completed each course section</div>
-      </div>
-      <select class="form-input" style="width:auto;min-width:220px;font-size:13px;padding:7px 10px;" id="progress-course-select" onchange="renderProgress()"></select>
-    </div>
-    <div class="grid-2" id="progress-metrics"></div>
-    <div class="progress-table-wrap">
-      <div class="overflow-x">
-        <table id="progress-table-el"></table>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- MODAL -->
 <div class="modal-backdrop" id="modal" style="display:none;" onclick="closeModalOutside(event)">
-  <div class="modal" id="modal-inner">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title"></div>
-      <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
-    </div>
-    <div id="modal-body"></div>
-  </div>
+  <div class="modal"><div class="modal-header"><div class="modal-title" id="modal-title"></div><button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button></div><div id="modal-body"></div></div>
 </div>
 
 <script>
-var state = {
-  role: 'admin',
-  courses: [
-    {
-      id: 1,
-      title: 'Dojo Safety & Emergency Procedures',
-      description: 'Covers mat safety, first aid basics, and emergency protocols for all staff.',
-      sections: [
-        { id: 's1', type: 'video', title: 'Mat Safety Overview', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-        { id: 's2', type: 'text', title: 'First Aid Quick Reference', content: 'Key steps for common dojo injuries including sprains, cuts, and concussions. Always call 911 for head injuries. Keep the first aid kit stocked and report any use to management.' },
-        { id: 's3', type: 'video', title: 'Fire & Evacuation Drill', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
-      ]
-    },
-    {
-      id: 2,
-      title: 'Customer Service & Enrollment',
-      description: 'How to greet prospects, handle objections, and process new memberships.',
-      sections: [
-        { id: 's4', type: 'video', title: 'The Boundless Welcome', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-        { id: 's5', type: 'text', title: 'Membership Tiers Explained', content: 'Kids plan: ages 4-12, 2x/week. Adult plan: unlimited classes. Family plan: up to 4 members at a discount. Always lead with the Family plan when parents enroll a child.' },
-        { id: 's6', type: 'video', title: 'Handling Common Objections', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
-      ]
+const SUPABASE_URL='https://brrjkeekzettqdbewlfe.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJycmprZWVremV0dHFkYmV3bGZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDEyMzksImV4cCI6MjA5NjA3NzIzOX0.V6lFgfcE7gx7530oTAmSPG9R3y2ek79eo3AkeB1W0So';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+var currentUser=null,currentProfile=null,allStaff=[],allCourses=[];
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function ini(n){return (n||'').split(' ').map(function(p){return p[0]||'';}).join('').substring(0,2).toUpperCase();}
+
+function switchAuthTab(t){
+  document.getElementById('signin-form').style.display=t==='signin'?'':'none';
+  document.getElementById('signup-form').style.display=t==='signup'?'':'none';
+  document.getElementById('tab-signin').classList.toggle('active',t==='signin');
+  document.getElementById('tab-signup').classList.toggle('active',t==='signup');
+  document.getElementById('auth-error').style.display='none';
+}
+function showAuthError(m){var e=document.getElementById('auth-error');e.textContent=m;e.style.display='block';}
+
+async function signIn(){
+  var email=document.getElementById('si-email').value.trim(),pass=document.getElementById('si-password').value;
+  if(!email||!pass){showAuthError('Please enter email and password.');return;}
+  var btn=document.getElementById('signin-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Signing in...';
+  var {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-login"></i> Sign in';
+  if(error){showAuthError(error.message);return;}
+  await loadApp(data.user);
+}
+
+async function signUp(){
+  var name=document.getElementById('su-name').value.trim(),role=document.getElementById('su-role').value.trim(),
+      email=document.getElementById('su-email').value.trim(),pass=document.getElementById('su-password').value;
+  if(!name||!email||!pass){showAuthError('Please fill in all fields.');return;}
+  var btn=document.getElementById('signup-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Creating...';
+  var {data,error}=await sb.auth.signUp({email,password:pass});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-user-plus"></i> Create account';
+  if(error){showAuthError(error.message);return;}
+  if(data.user){
+    await sb.from('profiles').insert({id:data.user.id,name,role:role||'Staff',is_admin:false});
+    await loadApp(data.user);
+  }
+}
+
+async function signOut(){
+  await sb.auth.signOut();currentUser=null;currentProfile=null;
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('main-app').style.display='none';
+}
+
+async function loadApp(user){
+  currentUser=user;
+  var {data:profile}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  currentProfile=profile;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('main-app').style.display='block';
+  document.getElementById('user-name-display').textContent=(profile?profile.name:user.email)+(currentProfile&&currentProfile.is_admin?' (Admin)':'');
+  if(currentProfile&&currentProfile.is_admin){
+    document.getElementById('new-course-btn').style.display='';
+    document.getElementById('tab-staff').style.display='';
+    document.getElementById('tab-progress').style.display='';
+    document.getElementById('courses-sub').textContent='Build and manage staff training content';
+  }
+  await loadCourses();
+  if(currentProfile&&currentProfile.is_admin)await loadStaff();
+}
+
+async function loadCourses(){
+  var {data}=await sb.from('courses').select('*, sections(*)').order('id');
+  allCourses=data||[];
+  await renderCourses();
+}
+
+async function renderCourses(){
+  var list=document.getElementById('course-list');
+  if(!allCourses.length){list.innerHTML='<div class="empty-state"><i class="ti ti-books"></i>No courses yet.</div>';return;}
+  var compMap={};
+  if(currentUser&&(!currentProfile||!currentProfile.is_admin)){
+    var sids=[];allCourses.forEach(function(c){(c.sections||[]).forEach(function(s){sids.push(s.id);});});
+    if(sids.length){var {data:comps}=await sb.from('completions').select('section_id').eq('user_id',currentUser.id).in('section_id',sids);(comps||[]).forEach(function(c){compMap[c.section_id]=true;});}
+  }
+  list.innerHTML=allCourses.map(function(c){
+    var secs=c.sections||[],total=secs.length,meta='',right='';
+    if(currentProfile&&currentProfile.is_admin){
+      meta='<span>'+total+' sections</span>';
+      right='<div style="display:flex;gap:6px;flex-shrink:0;" onclick="event.stopPropagation()">'+
+        '<button class="btn btn-sm" onclick="openEditCourse('+c.id+')"><i class="ti ti-edit"></i></button>'+
+        '<button class="btn btn-sm btn-danger" onclick="deleteCourse('+c.id+')"><i class="ti ti-trash"></i></button></div>';
+    } else {
+      var done=secs.filter(function(s){return compMap[s.id];}).length,pct=total?Math.round(done/total*100):0;
+      meta='<span>'+total+' sections</span><span>'+pct+'% complete</span>';
+      right='<span class="badge '+(pct===100?'badge-success':'badge-warning')+'">'+(pct===100?'Done':'In progress')+'</span>';
     }
-  ],
-  staff: [
-    { id: 1, name: 'Sarah K.', role: 'Head Instructor', initials: 'SK' },
-    { id: 2, name: 'Marcus T.', role: 'Assistant Instructor', initials: 'MT' },
-    { id: 3, name: 'Priya N.', role: 'Front Desk', initials: 'PN' },
-    { id: 4, name: 'Dylan C.', role: 'Assistant Instructor', initials: 'DC' },
-    { id: 5, name: 'Aisha R.', role: 'Front Desk', initials: 'AR' },
-    { id: 6, name: 'Jake W.', role: 'Instructor', initials: 'JW' }
-  ],
-  completions: {
-    's1': [1,2,3,4], 's2': [1,2,3], 's3': [1,2],
-    's4': [1,3,5,6], 's5': [1,3], 's6': [1]
-  },
-  nextCourseId: 3,
-  nextSectionId: 10,
-  nextStaffId: 7,
-  editingCourse: null,
-  editingSections: [],
-  currentStaffId: 1
+    var prog=(!currentProfile||!currentProfile.is_admin)?function(){var done=secs.filter(function(s){return compMap[s.id];}).length,pct=total?Math.round(done/total*100):0;return '<div class="progress-bar-wrap"><div class="progress-bar" style="width:'+pct+'%"></div></div>';}():'';
+    return '<div class="card clickable" onclick="openCourse('+c.id+')"><div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;"><div style="flex:1;min-width:0;"><div class="card-title">'+esc(c.title)+'</div><div class="card-meta">'+meta+'</div></div>'+right+'</div>'+prog+'</div>';
+  }).join('');
+}
+
+async function openCourse(id){
+  var course=allCourses.find(function(c){return c.id===id;});if(!course)return;
+  var secs=course.sections||[];
+  document.getElementById('modal-title').textContent=course.title;
+  var compMap={},qrMap={};
+  if(currentUser&&secs.length){
+    var sids=secs.map(function(s){return s.id;});
+    var {data:comps}=await sb.from('completions').select('section_id').eq('user_id',currentUser.id).in('section_id',sids);
+    (comps||[]).forEach(function(c){compMap[c.section_id]=true;});
+    var {data:qrs}=await sb.from('quiz_results').select('*').eq('user_id',currentUser.id).in('section_id',sids);
+    (qrs||[]).forEach(function(r){qrMap[r.section_id]=r;});
+  }
+  var isAdmin=currentProfile&&currentProfile.is_admin;
+  var body='<p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">'+esc(course.description||'')+'</p>';
+  secs.forEach(function(s){
+    var done=compMap[s.id],qr=qrMap[s.id];
+    var tc=s.type==='video'?'type-video':s.type==='quiz'?'type-quiz':s.type==='file'?'type-file':'type-text';
+    var ti=s.type==='video'?'brand-youtube':s.type==='quiz'?'help-circle':s.type==='file'?'paperclip':'file-text';
+    body+='<div class="section-item" style="align-items:flex-start;margin-bottom:10px;"><div class="section-type-icon '+tc+'"><i class="ti ti-'+ti+'"></i></div><div style="flex:1;min-width:0;"><div style="font-weight:500;font-size:14px;">'+esc(s.title)+'</div>';
+    if(isAdmin){
+      var lbl=s.type==='video'?'Video section':s.type==='quiz'?'Quiz section':s.type==='file'?'File section':'Text section';
+      body+='<div style="font-size:12px;color:var(--text2);margin-top:3px;">'+lbl+'</div>';
+      if(s.type==='quiz')body+='<button class="btn btn-sm" style="margin-top:8px;" onclick="openQuizEditor('+s.id+')"><i class="ti ti-edit"></i> Edit questions</button>';
+      if(s.type==='file')body+='<button class="btn btn-sm" style="margin-top:8px;" onclick="openFileUploader('+s.id+')"><i class="ti ti-upload"></i> Upload file</button>'+(s.url?'<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm" style="margin-left:6px;"><i class="ti ti-external-link"></i> View</a>':'');
+    } else {
+      if(s.type==='video'&&s.url)body+='<div style="margin-top:8px;"><a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i> Watch on YouTube</a></div>';
+      if(s.type==='text'&&s.content)body+='<div style="font-size:13px;color:var(--text2);margin-top:6px;line-height:1.7;">'+esc(s.content)+'</div>';
+      if(s.type==='file'&&s.url)body+='<div style="margin-top:8px;"><a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-download"></i> View / Download</a></div>';
+      if(s.type==='quiz'){
+        if(qr)body+='<div class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-top:6px;">'+(qr.passed?'Passed '+qr.score+'%':'Failed '+qr.score+'%')+'</div><button class="btn btn-sm" style="margin-top:8px;" onclick="openQuiz('+s.id+','+id+')">Retake quiz</button>';
+        else body+='<button class="btn btn-sm" style="margin-top:8px;" onclick="openQuiz('+s.id+','+id+')"><i class="ti ti-help-circle"></i> Take quiz</button>';
+      }
+      if(s.type!=='quiz')body+='<button class="btn btn-sm '+(done?'btn-success':'')+'" style="margin-top:8px;" onclick="toggleComplete('+s.id+','+!!done+','+id+')">'+(done?'<i class="ti ti-check"></i> Marked done':'Mark as done')+'</button>';
+    }
+    body+='</div></div>';
+  });
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('modal').style.display='flex';
+}
+
+async function toggleComplete(sid,isDone,courseId){
+  if(isDone)await sb.from('completions').delete().eq('user_id',currentUser.id).eq('section_id',sid);
+  else await sb.from('completions').insert({user_id:currentUser.id,section_id:sid});
+  await openCourse(courseId);await renderCourses();
+}
+
+async function openQuiz(sectionId,courseId){
+  var {data:questions}=await sb.from('quiz_questions').select('*').eq('section_id',sectionId);
+  if(!questions||!questions.length){alert('No questions set up for this quiz yet.');return;}
+  var answers={},submitted=false;
+  function renderQ(){
+    var b='';
+    questions.forEach(function(q,qi){
+      var opts=q.options||[];
+      b+='<div style="margin-bottom:1.25rem;"><div style="font-size:14px;font-weight:500;margin-bottom:8px;">'+(qi+1)+'. '+esc(q.question)+'</div>';
+      opts.forEach(function(opt,oi){
+        var cls='quiz-option';
+        if(submitted){if(oi===q.correct_index)cls+=' correct';else if(answers[q.id]===oi)cls+=' wrong';}
+        else if(answers[q.id]===oi)cls+=' selected';
+        b+='<div class="'+cls+'" onclick="'+(submitted?'':'qa('+q.id+','+oi+')')+'"><div style="width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:600;">'+(submitted&&oi===q.correct_index?'✓':String.fromCharCode(65+oi))+'</div><span style="font-size:13px;">'+esc(opt)+'</span></div>';
+      });
+      b+='</div>';
+    });
+    if(!submitted)b+='<button class="btn btn-primary" style="width:100%;" onclick="sq()"><i class="ti ti-check"></i> Submit answers</button>';
+    document.getElementById('modal-body').innerHTML='<div id="qc">'+b+'</div>';
+  }
+  window.qa=function(qid,oi){if(submitted)return;answers[qid]=oi;renderQ();};
+  window.sq=async function(){
+    if(Object.keys(answers).length<questions.length){alert('Please answer all questions.');return;}
+    submitted=true;
+    var correct=questions.filter(function(q){return answers[q.id]===q.correct_index;}).length;
+    var score=Math.round(correct/questions.length*100),passed=score>=70;
+    await sb.from('quiz_results').upsert({user_id:currentUser.id,section_id:sectionId,score,passed,completed_at:new Date().toISOString()},{onConflict:'user_id,section_id'});
+    if(passed)await sb.from('completions').upsert({user_id:currentUser.id,section_id:sectionId},{onConflict:'user_id,section_id'});
+    renderQ();
+    document.getElementById('qc').insertAdjacentHTML('beforeend','<div class="alert '+(passed?'alert-success':'alert-danger')+'" style="margin-top:1rem;">'+(passed?'Passed! Score: '+score+'%':'Score: '+score+'% — need 70% to pass. You can retake it.')+'</div>');
+    await renderCourses();
+  };
+  document.getElementById('modal-title').textContent='Quiz';
+  renderQ();
+  document.getElementById('modal').style.display='flex';
+}
+
+async function openQuizEditor(sectionId){
+  var {data:existing}=await sb.from('quiz_questions').select('*').eq('section_id',sectionId);
+  var qs=(existing||[]).map(function(q){return{id:q.id,question:q.question,options:q.options||['',''],correct_index:q.correct_index||0};});
+  function renderQE(){
+    var b=qs.map(function(q,qi){
+      return '<div style="background:var(--bg2);border-radius:var(--radius);padding:12px;margin-bottom:10px;">'+
+        '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;font-weight:500;">Q'+(qi+1)+'</span><button class="btn btn-sm btn-danger" onclick="dq('+qi+')"><i class="ti ti-trash"></i></button></div>'+
+        '<input class="form-input" style="margin-bottom:8px;" placeholder="Question" value="'+esc(q.question)+'" oninput="qs['+qi+'].question=this.value">'+
+        q.options.map(function(opt,oi){return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><input type="radio" name="c'+qi+'" '+(q.correct_index===oi?'checked':'')+' onchange="qs['+qi+'].correct_index='+oi+'" style="width:16px;height:16px;cursor:pointer;"><input class="form-input" style="flex:1;" placeholder="Option '+(oi+1)+'" value="'+esc(opt)+'" oninput="qs['+qi+'].options['+oi+']=this.value"></div>';}).join('')+
+        '<button class="btn btn-sm" onclick="ao('+qi+')" style="margin-top:4px;"><i class="ti ti-plus"></i> Add option</button></div>';
+    }).join('');
+    b+='<button class="btn btn-sm" onclick="aq()" style="margin-bottom:1rem;"><i class="ti ti-plus"></i> Add question</button>'+
+       '<br><button class="btn btn-primary" style="width:100%;margin-top:0.5rem;" onclick="saveQE('+sectionId+')"><i class="ti ti-check"></i> Save quiz</button>';
+    document.getElementById('modal-body').innerHTML=b;
+  }
+  window.aq=function(){qs.push({question:'',options:['',''],correct_index:0});renderQE();};
+  window.dq=function(i){qs.splice(i,1);renderQE();};
+  window.ao=function(qi){qs[qi].options.push('');renderQE();};
+  window.saveQE=async function(sid){
+    await sb.from('quiz_questions').delete().eq('section_id',sid);
+    var valid=qs.filter(function(q){return q.question.trim()&&q.options.length>=2;});
+    if(valid.length)await sb.from('quiz_questions').insert(valid.map(function(q){return{section_id:sid,question:q.question,options:q.options,correct_index:q.correct_index};}));
+    closeModal();alert('Quiz saved!');
+  };
+  document.getElementById('modal-title').textContent='Edit quiz questions';
+  renderQE();
+  document.getElementById('modal').style.display='flex';
+}
+
+async function openFileUploader(sectionId){
+  document.getElementById('modal-title').textContent='Upload file';
+  document.getElementById('modal-body').innerHTML=
+    '<p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">Upload a PDF, image, Word doc, or video. Staff will see a download link.</p>'+
+    '<div class="upload-area" onclick="document.getElementById(\'fi\').click()"><i class="ti ti-upload" style="font-size:28px;display:block;margin-bottom:8px;color:var(--text2);"></i><div style="font-size:14px;font-weight:500;">Click to choose a file</div><div style="font-size:12px;color:var(--text2);margin-top:4px;">PDF, images, Word docs, videos</div></div>'+
+    '<input type="file" id="fi" style="display:none;" onchange="doUpload('+sectionId+',this)">'+
+    '<div id="up-status" style="margin-top:1rem;"></div>';
+  document.getElementById('modal').style.display='flex';
+}
+window.doUpload=async function(sid,input){
+  var file=input.files[0];if(!file)return;
+  document.getElementById('up-status').innerHTML='<div style="display:flex;align-items:center;gap:8px;font-size:13px;"><span class="spinner"></span> Uploading '+esc(file.name)+'...</div>';
+  var path='s'+sid+'-'+Date.now()+'-'+file.name;
+  var {data,error}=await sb.storage.from('uploads').upload(path,file);
+  if(error){document.getElementById('up-status').innerHTML='<div class="alert alert-danger">Upload failed: '+esc(error.message)+'</div>';return;}
+  var {data:ud}=sb.storage.from('uploads').getPublicUrl(path);
+  await sb.from('sections').update({url:ud.publicUrl}).eq('id',sid);
+  document.getElementById('up-status').innerHTML='<div class="alert alert-success"><i class="ti ti-circle-check"></i> Uploaded! Staff can now access this file.</div>';
+  await loadCourses();
 };
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+var editingCourse=null,editingSections=[];
+function openNewCourse(){editingCourse=null;editingSections=[];document.getElementById('modal-title').textContent='New Course';renderCourseForm(null);document.getElementById('modal').style.display='flex';}
+async function openEditCourse(id){
+  var c=allCourses.find(function(c){return c.id===id;});if(!c)return;
+  editingCourse=id;editingSections=(c.sections||[]).map(function(s){return Object.assign({},s);});
+  document.getElementById('modal-title').textContent='Edit Course';renderCourseForm(c);document.getElementById('modal').style.display='flex';
+}
+function renderCourseForm(course){
+  var sh=editingSections.length?editingSections.map(function(s,i){
+    var tc=s.type==='video'?'type-video':s.type==='quiz'?'type-quiz':s.type==='file'?'type-file':'type-text';
+    var ti=s.type==='video'?'brand-youtube':s.type==='quiz'?'help-circle':s.type==='file'?'paperclip':'file-text';
+    var ex='';
+    if(s.type==='video')ex='<input class="form-input" style="margin-top:6px;" placeholder="YouTube URL" value="'+esc(s.url||'')+'" oninput="editingSections['+i+'].url=this.value">';
+    if(s.type==='text')ex='<textarea class="form-input" style="margin-top:6px;" placeholder="Text content..." oninput="editingSections['+i+'].content=this.value">'+esc(s.content||'')+'</textarea>';
+    if(s.type==='quiz')ex='<div style="font-size:12px;color:var(--text2);margin-top:6px;">Add questions after saving.</div>';
+    if(s.type==='file')ex='<div style="font-size:12px;color:var(--text2);margin-top:6px;">Upload file after saving.</div>';
+    return '<div class="section-item" style="flex-direction:column;gap:6px;"><div style="display:flex;align-items:center;gap:8px;width:100%;"><div class="section-type-icon '+tc+'"><i class="ti ti-'+ti+'"></i></div><input class="form-input" style="flex:1;" placeholder="Section title" value="'+esc(s.title||'')+'" oninput="editingSections['+i+'].title=this.value"><button class="btn btn-sm btn-danger" onclick="rmSec('+i+')"><i class="ti ti-trash"></i></button></div>'+ex+'</div>';
+  }).join(''):'<div style="font-size:13px;color:var(--text2);padding:8px 0;">No sections yet.</div>';
+  document.getElementById('modal-body').innerHTML=
+    '<div class="form-group"><label class="form-label">Course title</label><input class="form-input" id="cf-title" value="'+esc(course?course.title:'')+'"></div>'+
+    '<div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="cf-desc">'+esc(course?course.description:'')+'</textarea></div>'+
+    '<div class="divider"></div><div style="font-size:13px;font-weight:500;margin-bottom:0.75rem;">Sections</div>'+
+    '<div id="cf-secs">'+sh+'</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;">'+
+      '<button class="btn btn-sm" onclick="addSec(\'video\')"><i class="ti ti-brand-youtube"></i> Video</button>'+
+      '<button class="btn btn-sm" onclick="addSec(\'text\')"><i class="ti ti-file-text"></i> Text</button>'+
+      '<button class="btn btn-sm" onclick="addSec(\'quiz\')"><i class="ti ti-help-circle"></i> Quiz</button>'+
+      '<button class="btn btn-sm" onclick="addSec(\'file\')"><i class="ti ti-paperclip"></i> File</button>'+
+    '</div>'+
+    '<button class="btn btn-primary" style="width:100%;" onclick="saveCourse()" id="sc-btn"><i class="ti ti-check"></i> Save Course</button>';
+}
+function addSec(t){editingSections.push({id:null,type:t,title:'',url:'',content:''});renderCourseForm(editingCourse?allCourses.find(function(c){return c.id===editingCourse;}):null);}
+function rmSec(i){editingSections.splice(i,1);renderCourseForm(editingCourse?allCourses.find(function(c){return c.id===editingCourse;}):null);}
+async function saveCourse(){
+  var title=document.getElementById('cf-title').value.trim(),desc=document.getElementById('cf-desc').value.trim();
+  if(!title){alert('Please enter a course title.');return;}
+  var btn=document.getElementById('sc-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Saving...';
+  var cid=editingCourse;
+  if(editingCourse){await sb.from('courses').update({title,description:desc}).eq('id',editingCourse);await sb.from('sections').delete().eq('course_id',editingCourse);}
+  else{var {data:nc}=await sb.from('courses').insert({title,description:desc}).select().single();cid=nc.id;}
+  if(editingSections.length)await sb.from('sections').insert(editingSections.map(function(s,i){return{course_id:cid,type:s.type,title:s.title||'Untitled',content:s.content||null,url:s.url||null,order_index:i};}));
+  closeModal();await loadCourses();
+}
+async function deleteCourse(id){
+  if(!confirm('Delete this course? This cannot be undone.'))return;
+  await sb.from('courses').delete().eq('id',id);await loadCourses();
 }
 
-function switchRole() {
-  if (state.role === 'admin') {
-    state.role = 'staff';
-    state.currentStaffId = state.staff[0] ? state.staff[0].id : 1;
-    document.getElementById('role-label').textContent = state.staff[0] ? state.staff[0].name : 'Staff view';
-  } else {
-    state.role = 'admin';
-    document.getElementById('role-label').textContent = 'Admin view';
-  }
-  document.getElementById('new-course-btn').style.display = state.role === 'admin' ? '' : 'none';
-  document.getElementById('add-staff-btn').style.display = state.role === 'admin' ? '' : 'none';
-  render();
+async function loadStaff(){
+  var {data}=await sb.from('profiles').select('*').order('name');
+  allStaff=data||[];renderStaff();
 }
-
-function showPage(page) {
-  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
-  document.getElementById('page-' + page).classList.add('active');
-  document.getElementById('tab-' + page).classList.add('active');
-  if (page === 'progress') renderProgress();
-}
-
-function render() {
-  renderCourses();
-  renderStaff();
-}
-
-function renderCourses() {
-  document.getElementById('staff-count-sub').textContent = state.staff.length + ' staff members';
-  var list = document.getElementById('course-list');
-  if (!state.courses.length) {
-    list.innerHTML = '<div class="empty-state"><i class="ti ti-books"></i>No courses yet — create your first one.</div>';
-    return;
-  }
-  list.innerHTML = state.courses.map(function(c) {
-    var total = c.sections.length;
-    var pct = 0, metaHtml = '';
-    if (state.role === 'staff') {
-      var done = c.sections.filter(function(s) { return (state.completions[s.id]||[]).indexOf(state.currentStaffId) !== -1; }).length;
-      pct = total ? Math.round(done/total*100) : 0;
-      metaHtml = '<span>' + total + ' sections</span><span>' + pct + '% complete</span>';
-    } else {
-      var allDone = 0;
-      c.sections.forEach(function(s) { allDone += (state.completions[s.id]||[]).length; });
-      metaHtml = '<span>' + total + ' sections</span><span>' + allDone + ' total completions</span>';
-    }
-    var rightHtml = state.role === 'admin'
-      ? '<div style="display:flex;gap:6px;flex-shrink:0;" onclick="event.stopPropagation()">' +
-          '<button class="btn btn-sm" onclick="openEditCourse(' + c.id + ')"><i class="ti ti-edit"></i></button>' +
-          '<button class="btn btn-sm btn-danger" onclick="deleteCourse(' + c.id + ')"><i class="ti ti-trash"></i></button>' +
-        '</div>'
-      : '<span class="badge ' + (pct===100?'badge-success':'badge-warning') + '">' + (pct===100?'Done':'In progress') + '</span>';
-    return '<div class="card" onclick="openCourse(' + c.id + ')">' +
-      '<div class="card-header"><div style="flex:1;min-width:0;"><div class="card-title">' + esc(c.title) + '</div>' +
-      '<div class="card-meta">' + metaHtml + '</div></div>' + rightHtml + '</div>' +
-      (state.role === 'staff' ? '<div class="progress-bar-wrap"><div class="progress-bar" style="width:' + pct + '%"></div></div>' : '') +
+function renderStaff(){
+  document.getElementById('staff-sub').textContent=allStaff.length+' staff members';
+  var list=document.getElementById('staff-list');
+  if(!allStaff.length){list.innerHTML='<div class="empty-state" style="padding:2rem;"><i class="ti ti-users"></i>No staff yet.</div>';return;}
+  list.innerHTML=allStaff.map(function(s){
+    return '<div class="staff-row"><div class="avatar">'+esc(ini(s.name))+'</div>'+
+      '<div style="flex:1;"><div style="font-size:14px;font-weight:500;">'+esc(s.name)+'</div><div style="font-size:12px;color:var(--text2);">'+esc(s.role||'Staff')+'</div></div>'+
+      (s.is_admin?'<span class="badge badge-info">Admin</span>':'<button class="btn btn-sm" onclick="makeAdmin(\''+s.id+'\')">Make admin</button>')+
     '</div>';
   }).join('');
 }
-
-function renderStaff() {
-  var list = document.getElementById('staff-list');
-  if (!state.staff.length) {
-    list.innerHTML = '<div class="empty-state" style="padding:2rem;"><i class="ti ti-users"></i>No staff yet.</div>';
-    return;
-  }
-  list.innerHTML = state.staff.map(function(s) {
-    return '<div class="staff-row">' +
-      '<div class="avatar">' + esc(s.initials) + '</div>' +
-      '<div style="flex:1"><div class="staff-name">' + esc(s.name) + '</div><div class="staff-role">' + esc(s.role) + '</div></div>' +
-      (state.role === 'admin' ? '<button class="btn btn-sm btn-danger" onclick="removeStaff(' + s.id + ')"><i class="ti ti-trash"></i></button>' : '') +
-    '</div>';
-  }).join('');
+async function makeAdmin(uid){if(!confirm('Give admin access to this staff member?'))return;await sb.from('profiles').update({is_admin:true}).eq('id',uid);await loadStaff();}
+function openInviteStaff(){
+  document.getElementById('modal-title').textContent='Invite staff';
+  document.getElementById('modal-body').innerHTML=
+    '<p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">Share this link with your staff. They click it, create an account, and they\'re in.</p>'+
+    '<div style="background:var(--bg2);border-radius:var(--radius);padding:12px;font-size:13px;word-break:break-all;">'+esc(window.location.href)+'</div>'+
+    '<button class="btn" style="width:100%;margin-top:1rem;" onclick="navigator.clipboard.writeText(window.location.href).then(function(){alert(\'Copied!\');})"><i class="ti ti-copy"></i> Copy link</button>';
+  document.getElementById('modal').style.display='flex';
 }
 
-function renderProgress() {
-  var sel = document.getElementById('progress-course-select');
-  if (!sel) return;
-  var prevVal = sel.value;
-  sel.innerHTML = state.courses.map(function(c) { return '<option value="' + c.id + '">' + esc(c.title) + '</option>'; }).join('');
-  if (prevVal) sel.value = prevVal;
-  var cid = parseInt(sel.value);
-  var course = state.courses.find(function(c) { return c.id === cid; });
-  if (!course) {
-    document.getElementById('progress-metrics').innerHTML = '';
-    document.getElementById('progress-table-el').innerHTML = '';
-    return;
+async function renderProgress(){
+  var sel=document.getElementById('progress-course-select');if(!sel)return;
+  sel.innerHTML=allCourses.map(function(c){return '<option value="'+c.id+'">'+esc(c.title)+'</option>';}).join('');
+  var cid=parseInt(sel.value),course=allCourses.find(function(c){return c.id===cid;});
+  if(!course||!allStaff.length){document.getElementById('progress-metrics').innerHTML='';document.getElementById('progress-table-el').innerHTML='<tr><td style="padding:1rem;color:var(--text2);font-size:13px;">No data.</td></tr>';return;}
+  var secs=course.sections||[],sids=secs.map(function(s){return s.id;}),uids=allStaff.map(function(s){return s.id;});
+  var compMap={},qrMap={};
+  if(sids.length&&uids.length){
+    var {data:comps}=await sb.from('completions').select('user_id,section_id').in('section_id',sids).in('user_id',uids);
+    (comps||[]).forEach(function(c){compMap[c.user_id+'_'+c.section_id]=true;});
+    var {data:qrs}=await sb.from('quiz_results').select('user_id,section_id,passed,score').in('section_id',sids).in('user_id',uids);
+    (qrs||[]).forEach(function(r){qrMap[r.user_id+'_'+r.section_id]=r;});
   }
-  var totalPossible = course.sections.length * state.staff.length;
-  var totalDone = 0;
-  course.sections.forEach(function(s) { totalDone += (state.completions[s.id]||[]).length; });
-  var staffFullDone = state.staff.filter(function(st) {
-    return course.sections.every(function(s) { return (state.completions[s.id]||[]).indexOf(st.id) !== -1; });
-  }).length;
-  document.getElementById('progress-metrics').innerHTML =
-    '<div class="metric-card"><div class="metric-label">Overall completion</div><div class="metric-value">' + (totalPossible ? Math.round(totalDone/totalPossible*100) : 0) + '%</div></div>' +
-    '<div class="metric-card"><div class="metric-label">Staff fully done</div><div class="metric-value">' + staffFullDone + ' / ' + state.staff.length + '</div></div>';
-
-  var thead = '<thead><tr><th>Staff</th>' +
-    course.sections.map(function(s) { return '<th style="text-align:center;max-width:100px;">' + esc(s.title) + '</th>'; }).join('') +
-    '<th style="text-align:center;">Done</th></tr></thead>';
-  var tbody = '<tbody>' + state.staff.map(function(st) {
-    var cols = course.sections.map(function(s) {
-      var done = (state.completions[s.id]||[]).indexOf(st.id) !== -1;
-      return '<td style="text-align:center;">' +
-        (state.role === 'admin'
-          ? '<input type="checkbox"' + (done?' checked':'') + ' onchange="toggleCompletion(\'' + s.id + '\',' + st.id + ',this.checked)">'
-          : '<i class="ti ti-' + (done?'circle-check" style="color:var(--success-text)"':'circle" style="color:var(--border2)"') + '"></i>'
-        ) + '</td>';
+  var tp=secs.length*allStaff.length,td=0;
+  allStaff.forEach(function(st){secs.forEach(function(s){if(compMap[st.id+'_'+s.id])td++;});});
+  var fd=allStaff.filter(function(st){return secs.every(function(s){return compMap[st.id+'_'+s.id];});}).length;
+  document.getElementById('progress-metrics').innerHTML=
+    '<div class="metric-card"><div class="metric-label">Overall completion</div><div class="metric-value">'+(tp?Math.round(td/tp*100):0)+'%</div></div>'+
+    '<div class="metric-card"><div class="metric-label">Staff fully done</div><div class="metric-value">'+fd+' / '+allStaff.length+'</div></div>'+
+    '<div class="metric-card"><div class="metric-label">Total completions</div><div class="metric-value">'+td+' / '+tp+'</div></div>';
+  var thead='<thead><tr><th>Staff</th>'+secs.map(function(s){return '<th style="text-align:center;max-width:90px;font-size:11px;">'+esc(s.title)+'</th>';}).join('')+'<th style="text-align:center;">Done</th></tr></thead>';
+  var tbody='<tbody>'+allStaff.map(function(st){
+    var cols=secs.map(function(s){
+      var done=compMap[st.id+'_'+s.id],qr=qrMap[st.id+'_'+s.id];
+      var cell=s.type==='quiz'?(qr?(qr.passed?'<span class="badge badge-success" style="font-size:10px;">'+qr.score+'%</span>':'<span class="badge badge-danger" style="font-size:10px;">'+qr.score+'%</span>'):'<span style="color:var(--text3);">—</span>'):(done?'<i class="ti ti-circle-check" style="color:var(--success-text);font-size:16px;"></i>':'<i class="ti ti-circle" style="color:var(--border2);font-size:16px;"></i>');
+      return '<td style="text-align:center;">'+cell+'</td>';
     }).join('');
-    var cnt = course.sections.filter(function(s) { return (state.completions[s.id]||[]).indexOf(st.id)!==-1; }).length;
-    return '<tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="width:26px;height:26px;font-size:11px;">' + esc(st.initials) + '</div>' + esc(st.name) + '</div></td>' + cols +
-      '<td style="text-align:center;"><span class="badge ' + (cnt===course.sections.length?'badge-success':'badge-neutral') + '">' + cnt + '/' + course.sections.length + '</span></td></tr>';
-  }).join('') + '</tbody>';
-  document.getElementById('progress-table-el').innerHTML = thead + tbody;
+    var cnt=secs.filter(function(s){return compMap[st.id+'_'+s.id];}).length;
+    return '<tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="width:26px;height:26px;font-size:10px;">'+esc(ini(st.name))+'</div>'+esc(st.name)+'</div></td>'+cols+'<td style="text-align:center;"><span class="badge '+(cnt===secs.length?'badge-success':'badge-neutral')+'">'+cnt+'/'+secs.length+'</span></td></tr>';
+  }).join('')+'</tbody>';
+  document.getElementById('progress-table-el').innerHTML=thead+tbody;
 }
 
-function toggleCompletion(sid, staffId, checked) {
-  if (!state.completions[sid]) state.completions[sid] = [];
-  var idx = state.completions[sid].indexOf(staffId);
-  if (checked && idx === -1) state.completions[sid].push(staffId);
-  if (!checked && idx !== -1) state.completions[sid].splice(idx, 1);
-  renderProgress();
-  renderCourses();
+function closeModal(){document.getElementById('modal').style.display='none';}
+function closeModalOutside(e){if(e.target.id==='modal')closeModal();}
+function showPage(p){
+  document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});
+  document.querySelectorAll('.nav-tab').forEach(function(x){x.classList.remove('active');});
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('tab-'+p).classList.add('active');
+  if(p==='progress')renderProgress();
+  if(p==='staff')loadStaff();
 }
 
-function openCourse(id) {
-  var course = state.courses.find(function(c) { return c.id === id; });
-  if (!course) return;
-  document.getElementById('modal-title').textContent = course.title;
-  var body = '<p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">' + esc(course.description) + '</p>';
-  if (state.role === 'staff') {
-    body += course.sections.map(function(s) {
-      var done = (state.completions[s.id]||[]).indexOf(state.currentStaffId) !== -1;
-      var sub = s.type === 'video'
-        ? '<a href="' + esc(s.url) + '" target="_blank" style="font-size:12px;color:var(--info-text);text-decoration:none;" onclick="event.stopPropagation()"><i class="ti ti-external-link" style="font-size:12px;vertical-align:-1px;"></i> Open YouTube video</a>'
-        : '<div style="font-size:13px;color:var(--text2);margin-top:6px;line-height:1.6;">' + esc(s.content) + '</div>';
-      return '<div class="section-item" style="align-items:flex-start;">' +
-        '<div class="section-item-type ' + (s.type==='video'?'type-video':'type-text') + '"><i class="ti ti-' + (s.type==='video'?'brand-youtube':'file-text') + '"></i></div>' +
-        '<div class="section-item-body">' +
-          '<div class="section-item-name">' + esc(s.title) + '</div>' + sub +
-        '</div>' +
-        '<button class="btn btn-sm ' + (done?'done-btn-active':'') + '" onclick="markDone(\'' + s.id + '\',' + done + ',' + id + ')" style="flex-shrink:0;margin-left:8px;">' +
-          (done ? '<i class="ti ti-check"></i> Done' : 'Mark done') +
-        '</button>' +
-      '</div>';
-    }).join('');
-  } else {
-    body += course.sections.map(function(s) {
-      var cnt = (state.completions[s.id]||[]).length;
-      var sub = s.type === 'video'
-        ? '<span style="font-size:12px;color:var(--info-text);">YouTube video</span>'
-        : '<span style="font-size:12px;color:var(--text2);">Text section</span>';
-      return '<div class="section-item">' +
-        '<div class="section-item-type ' + (s.type==='video'?'type-video':'type-text') + '"><i class="ti ti-' + (s.type==='video'?'brand-youtube':'file-text') + '"></i></div>' +
-        '<div class="section-item-body">' +
-          '<div class="section-item-name">' + esc(s.title) + '</div>' +
-          '<div class="card-meta" style="margin-top:4px;">' + sub + '<span>' + cnt + ' of ' + state.staff.length + ' staff done</span></div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-  }
-  document.getElementById('modal-body').innerHTML = body;
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function markDone(sectionId, wasDone, courseId) {
-  if (!state.completions[sectionId]) state.completions[sectionId] = [];
-  var idx = state.completions[sectionId].indexOf(state.currentStaffId);
-  if (!wasDone && idx === -1) state.completions[sectionId].push(state.currentStaffId);
-  if (wasDone && idx !== -1) state.completions[sectionId].splice(idx, 1);
-  openCourse(courseId);
-  renderCourses();
-}
-
-function openNewCourse() {
-  state.editingCourse = null;
-  state.editingSections = [];
-  document.getElementById('modal-title').textContent = 'New Course';
-  renderCourseForm(null);
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function openEditCourse(id) {
-  var course = state.courses.find(function(c) { return c.id === id; });
-  if (!course) return;
-  state.editingCourse = id;
-  state.editingSections = course.sections.map(function(s) { return Object.assign({}, s); });
-  document.getElementById('modal-title').textContent = 'Edit Course';
-  renderCourseForm(course);
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function renderCourseForm(course) {
-  var secHtml = state.editingSections.length
-    ? state.editingSections.map(function(s, i) {
-        return '<div class="section-item" style="flex-direction:column;gap:8px;">' +
-          '<div style="display:flex;align-items:center;gap:8px;width:100%;">' +
-            '<div class="section-item-type ' + (s.type==='video'?'type-video':'type-text') + '" style="flex-shrink:0;"><i class="ti ti-' + (s.type==='video'?'brand-youtube':'file-text') + '"></i></div>' +
-            '<input class="form-input" style="flex:1;" placeholder="Section title" value="' + esc(s.title) + '" oninput="state.editingSections[' + i + '].title=this.value">' +
-            '<button class="btn btn-sm btn-danger" onclick="removeSection(' + i + ')"><i class="ti ti-trash"></i></button>' +
-          '</div>' +
-          (s.type==='video'
-            ? '<input class="form-input" placeholder="YouTube URL (e.g. https://youtube.com/watch?v=...)" value="' + esc(s.url||'') + '" oninput="state.editingSections[' + i + '].url=this.value">'
-            : '<textarea class="form-input" placeholder="Text content for this section..." oninput="state.editingSections[' + i + '].content=this.value">' + esc(s.content||'') + '</textarea>'
-          ) +
-        '</div>';
-      }).join('')
-    : '<div style="font-size:13px;color:var(--text2);margin-bottom:0.75rem;padding:8px 0;">No sections yet — add one below.</div>';
-
-  document.getElementById('modal-body').innerHTML =
-    '<div class="form-group"><label class="form-label">Course title</label>' +
-    '<input class="form-input" id="cf-title" placeholder="e.g. Dojo Safety Procedures" value="' + (course?esc(course.title):'') + '"></div>' +
-    '<div class="form-group"><label class="form-label">Description</label>' +
-    '<textarea class="form-input" id="cf-desc" placeholder="What will staff learn from this course?">' + (course?esc(course.description):'') + '</textarea></div>' +
-    '<div class="divider"></div>' +
-    '<div style="font-size:13px;font-weight:500;margin-bottom:0.75rem;">Sections</div>' +
-    '<div id="cf-sections">' + secHtml + '</div>' +
-    '<div style="display:flex;gap:8px;margin-bottom:1.25rem;">' +
-      '<button class="btn btn-sm" onclick="addSection(\'video\')"><i class="ti ti-brand-youtube"></i> Add video</button>' +
-      '<button class="btn btn-sm" onclick="addSection(\'text\')"><i class="ti ti-file-text"></i> Add text</button>' +
-    '</div>' +
-    '<button class="btn btn-primary" style="width:100%;" onclick="saveCourse()"><i class="ti ti-check"></i> Save Course</button>';
-}
-
-function addSection(type) {
-  state.editingSections.push({ id: 's' + (state.nextSectionId++), type: type, title: '', url: '', content: '' });
-  var course = state.editingCourse ? state.courses.find(function(c){return c.id===state.editingCourse;}) : null;
-  renderCourseForm(course);
-}
-function removeSection(i) {
-  state.editingSections.splice(i, 1);
-  var course = state.editingCourse ? state.courses.find(function(c){return c.id===state.editingCourse;}) : null;
-  renderCourseForm(course);
-}
-
-function saveCourse() {
-  var title = document.getElementById('cf-title').value.trim();
-  var desc = document.getElementById('cf-desc').value.trim();
-  if (!title) { alert('Please enter a course title.'); return; }
-  if (state.editingCourse) {
-    var c = state.courses.find(function(c){return c.id===state.editingCourse;});
-    c.title = title; c.description = desc; c.sections = state.editingSections.slice();
-  } else {
-    state.courses.push({ id: state.nextCourseId++, title: title, description: desc, sections: state.editingSections.slice() });
-  }
-  closeModal(); render();
-}
-
-function deleteCourse(id) {
-  if (!confirm('Delete this course? This cannot be undone.')) return;
-  state.courses = state.courses.filter(function(c){return c.id!==id;});
-  renderCourses();
-}
-
-function openAddStaff() {
-  document.getElementById('modal-title').textContent = 'Add Staff Member';
-  document.getElementById('modal-body').innerHTML =
-    '<div class="form-group"><label class="form-label">Full name</label><input class="form-input" id="sf-name" placeholder="e.g. Jordan Lee"></div>' +
-    '<div class="form-group"><label class="form-label">Role / Position</label><input class="form-input" id="sf-role" placeholder="e.g. Instructor"></div>' +
-    '<button class="btn btn-primary" style="width:100%;" onclick="saveStaff()"><i class="ti ti-check"></i> Add Staff Member</button>';
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function saveStaff() {
-  var name = document.getElementById('sf-name').value.trim();
-  var role = document.getElementById('sf-role').value.trim();
-  if (!name) { alert('Please enter a name.'); return; }
-  var parts = name.split(' ');
-  var initials = parts.map(function(p){return p[0]||'';}).join('').substring(0,2).toUpperCase();
-  state.staff.push({ id: state.nextStaffId++, name: name, role: role||'Staff', initials: initials });
-  closeModal(); renderStaff();
-}
-
-function removeStaff(id) {
-  if (!confirm('Remove this staff member?')) return;
-  state.staff = state.staff.filter(function(s){return s.id!==id;});
-  renderStaff();
-}
-
-function closeModal() { document.getElementById('modal').style.display = 'none'; }
-function closeModalOutside(e) { if (e.target.id === 'modal') closeModal(); }
-
-render();
+(async function(){
+  var {data:{session}}=await sb.auth.getSession();
+  if(session)await loadApp(session.user);
+})();
 </script>
 </body>
 </html>
