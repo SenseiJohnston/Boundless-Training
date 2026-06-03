@@ -168,8 +168,10 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--
   </div>
   <div class="nav-tabs">
     <div class="nav-tab active" onclick="showPage('courses')" id="tab-courses"><i class="ti ti-books"></i> Courses</div>
+    <div class="nav-tab" onclick="showPage('report')" id="tab-report"><i class="ti ti-clipboard"></i> Daily Report</div>
     <div class="nav-tab" onclick="showPage('staff')" id="tab-staff" style="display:none;"><i class="ti ti-users"></i> Staff</div>
     <div class="nav-tab" onclick="showPage('progress')" id="tab-progress" style="display:none;"><i class="ti ti-chart-bar"></i> Progress</div>
+    <div class="nav-tab" onclick="showPage('reportlog')" id="tab-reportlog" style="display:none;"><i class="ti ti-list"></i> Report Log</div>
   </div>
   <div class="content">
     <div class="page active" id="page-courses">
@@ -194,6 +196,100 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--
       <div class="grid-3" id="progress-metrics"></div>
       <div class="table-wrap"><div class="overflow-x"><table id="progress-table-el"></table></div></div>
     </div>
+
+    <div class="page" id="page-report">
+      <div class="section-header">
+        <div><div class="section-title">Instructor Daily Report</div><div class="section-sub">Submit your end-of-day report</div></div>
+      </div>
+      <div class="card" style="padding:1.25rem;">
+        <div class="form-group">
+          <label class="form-label">Date of classes</label>
+          <input class="form-input" type="date" id="dr-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Class times (e.g. 4:00pm, 5:30pm, 7:00pm)</label>
+          <input class="form-input" type="text" id="dr-times" placeholder="List all class times you taught today">
+        </div>
+        <div class="divider"></div>
+        <div class="form-group">
+          <label class="form-label">Did you make your social media post today?</label>
+          <select class="form-input" id="dr-social">
+            <option value="">Select...</option>
+            <option value="Yes - posted">Yes — posted</option>
+            <option value="No - did not post">No — did not post</option>
+            <option value="Someone else posted">Someone else posted</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Upload social media content (optional)</label>
+          <div class="upload-area" onclick="document.getElementById('dr-files').click()" id="dr-upload-area">
+            <i class="ti ti-upload" style="font-size:24px;display:block;margin-bottom:6px;color:var(--text2);"></i>
+            <div style="font-size:13px;font-weight:500;">Click to upload photos or videos</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:4px;">Images, videos, docs</div>
+          </div>
+          <input type="file" id="dr-files" multiple style="display:none;" onchange="handleReportFiles(this)">
+          <div id="dr-file-list" style="margin-top:8px;"></div>
+        </div>
+        <div class="divider"></div>
+        <div class="form-group">
+          <label class="form-label">Did you or someone follow up with all Attendance Violations and send SMS messages?</label>
+          <select class="form-input" id="dr-attendance">
+            <option value="">Select...</option>
+            <option value="Yes - all followed up">Yes — all followed up</option>
+            <option value="No - not completed">No — not completed</option>
+            <option value="No violations today">No violations today</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">How many families did you take a minute to connect with today? (give a number)</label>
+          <input class="form-input" type="number" id="dr-families" min="0" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Were there any students that were sick or injured before coming to class that we need to make note of?</label>
+          <textarea class="form-input" id="dr-sick" placeholder="List names and details, or write 'None'"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Do you think you or another staff member went above and beyond with something today?</label>
+          <textarea class="form-input" id="dr-above" placeholder="Describe what happened, or write 'No'"></textarea>
+        </div>
+        <div class="divider"></div>
+        <div class="form-group">
+          <label class="form-label">Did you make any of the following mistakes? (check all that apply)</label>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+            <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;"><input type="checkbox" id="m1" value="I forgot to do announcements"> I forgot to do announcements</label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;"><input type="checkbox" id="m2" value="I forgot to do mat chats"> I forgot to do mat chats</label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;"><input type="checkbox" id="m3" value="I started or ended class at the wrong time"> I started or ended class at the wrong time</label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;"><input type="checkbox" id="m4" value="I could have used student names more often"> I could have used student names more often</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Did anything go wrong today or was there an area you could improve on?</label>
+          <textarea class="form-input" id="dr-improve" placeholder="Be honest — this helps everyone grow"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Were there any injuries or medical emergencies in or out of classes? If so, did you fill out the incident report?</label>
+          <textarea class="form-input" id="dr-injuries" placeholder="Describe any incidents, or write 'None'"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Do you have any comments or concerns?</label>
+          <textarea class="form-input" id="dr-comments" placeholder="Anything else you want management to know"></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="submitDailyReport()" id="dr-submit-btn"><i class="ti ti-send"></i> Submit Report</button>
+        <div id="dr-status" style="margin-top:1rem;"></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-reportlog">
+      <div class="section-header">
+        <div><div class="section-title">Report Log</div><div class="section-sub">All submitted instructor reports</div></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="date" class="form-input" style="width:auto;font-size:13px;padding:7px 10px;" id="rl-date-filter" onchange="loadReportLog()">
+          <button class="btn btn-sm" onclick="document.getElementById('rl-date-filter').value='';loadReportLog()"><i class="ti ti-x"></i> Clear</button>
+        </div>
+      </div>
+      <div id="report-log-list"></div>
+    </div>
+
   </div>
 </div>
 
@@ -257,11 +353,13 @@ async function loadApp(user){
   document.getElementById('new-course-btn').style.display='none';
   document.getElementById('tab-staff').style.display='none';
   document.getElementById('tab-progress').style.display='none';
+  document.getElementById('tab-reportlog').style.display='none';
   document.getElementById('user-name-display').textContent=(profile?profile.name:user.email)+(currentProfile&&currentProfile.is_admin?' (Admin)':'');
   if(currentProfile&&currentProfile.is_admin){
     document.getElementById('new-course-btn').style.display='';
     document.getElementById('tab-staff').style.display='';
     document.getElementById('tab-progress').style.display='';
+    document.getElementById('tab-reportlog').style.display='';
     document.getElementById('courses-sub').textContent='Build and manage staff training content';
   }
   await loadCourses();
@@ -547,6 +645,116 @@ function showPage(p){
   document.getElementById('tab-'+p).classList.add('active');
   if(p==='progress')renderProgress();
   if(p==='staff')loadStaff();
+  if(p==='report')initReportForm();
+  if(p==='reportlog')loadReportLog();
+}
+
+var drUploadedFiles=[];
+function handleReportFiles(input){
+  drUploadedFiles=Array.from(input.files);
+  var list=document.getElementById('dr-file-list');
+  list.innerHTML=drUploadedFiles.map(function(f){
+    return '<div class="file-item"><i class="ti ti-file" style="color:var(--text2);"></i><span style="font-size:13px;flex:1;">'+esc(f.name)+'</span></div>';
+  }).join('');
+}
+
+function initReportForm(){
+  var today=new Date().toISOString().split('T')[0];
+  var el=document.getElementById('dr-date');
+  if(!el.value)el.value=today;
+}
+
+async function submitDailyReport(){
+  var date=document.getElementById('dr-date').value;
+  if(!date){alert('Please select a date.');return;}
+  var btn=document.getElementById('dr-submit-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Submitting...';
+  document.getElementById('dr-status').innerHTML='';
+
+  var mistakes=[];
+  ['m1','m2','m3','m4'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el&&el.checked)mistakes.push(el.value);
+  });
+
+  var fileUrls=[];
+  for(var i=0;i<drUploadedFiles.length;i++){
+    var f=drUploadedFiles[i];
+    var path='report-'+currentUser.id+'-'+Date.now()+'-'+f.name;
+    var {data,error}=await sb.storage.from('uploads').upload(path,f);
+    if(!error){var {data:ud}=sb.storage.from('uploads').getPublicUrl(path);fileUrls.push({name:f.name,url:ud.publicUrl});}
+  }
+
+  var report={
+    user_id:currentUser.id,
+    report_date:date,
+    class_times:document.getElementById('dr-times').value,
+    social_media_post:document.getElementById('dr-social').value,
+    social_media_files:fileUrls,
+    attendance_followup:document.getElementById('dr-attendance').value,
+    families_connected:parseInt(document.getElementById('dr-families').value)||0,
+    sick_injured:document.getElementById('dr-sick').value,
+    above_beyond:document.getElementById('dr-above').value,
+    mistakes:mistakes,
+    improvements:document.getElementById('dr-improve').value,
+    injuries:document.getElementById('dr-injuries').value,
+    comments:document.getElementById('dr-comments').value
+  };
+
+  var {error}=await sb.from('daily_reports').insert(report);
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Submit Report';
+  if(error){
+    document.getElementById('dr-status').innerHTML='<div class="alert alert-danger">Error: '+esc(error.message)+'</div>';
+  } else {
+    document.getElementById('dr-status').innerHTML='<div class="alert alert-success"><i class="ti ti-circle-check"></i> Report submitted successfully!</div>';
+    // reset form
+    ['dr-times','dr-sick','dr-above','dr-improve','dr-injuries','dr-comments'].forEach(function(id){document.getElementById(id).value='';});
+    ['dr-social','dr-attendance'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('dr-families').value='';
+    ['m1','m2','m3','m4'].forEach(function(id){document.getElementById(id).checked=false;});
+    document.getElementById('dr-file-list').innerHTML='';
+    drUploadedFiles=[];
+  }
+}
+
+async function loadReportLog(){
+  var list=document.getElementById('report-log-list');
+  list.innerHTML='<div class="empty-state"><span class="spinner"></span></div>';
+  var dateFilter=document.getElementById('rl-date-filter').value;
+  var query=sb.from('daily_reports').select('*, profiles(name, role)').order('report_date',{ascending:false}).order('submitted_at',{ascending:false});
+  if(dateFilter)query=query.eq('report_date',dateFilter);
+  var {data,error}=await query;
+  if(!data||!data.length){list.innerHTML='<div class="empty-state"><i class="ti ti-clipboard"></i>No reports yet.</div>';return;}
+  list.innerHTML=data.map(function(r){
+    var staffName=r.profiles?r.profiles.name:'Unknown';
+    var mistakes=(r.mistakes||[]);
+    var files=(r.social_media_files||[]);
+    return '<div class="card" style="margin-bottom:0.75rem;">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">'+
+        '<div><div style="font-weight:500;font-size:15px;">'+esc(staffName)+'</div>'+
+        '<div style="font-size:12px;color:var(--text2);">'+esc(r.report_date)+' &nbsp;·&nbsp; submitted '+new Date(r.submitted_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div></div>'+
+        '<span class="badge badge-info">'+esc(r.report_date)+'</span>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">'+
+        rField('Class times',r.class_times)+
+        rField('Social media',r.social_media_post)+
+        rField('Attendance followup',r.attendance_followup)+
+        rField('Families connected',r.families_connected)+
+        rField('Sick/injured students',r.sick_injured)+
+        rField('Above & beyond',r.above_beyond)+
+      '</div>'+
+      (mistakes.length?'<div style="margin-top:10px;"><div style="font-size:12px;color:var(--text2);margin-bottom:4px;">Mistakes noted:</div>'+mistakes.map(function(m){return '<span class="badge badge-warning" style="margin-right:4px;margin-bottom:4px;">'+esc(m)+'</span>';}).join('')+'</div>':'')+ 
+      (r.improvements?'<div style="margin-top:10px;"><div style="font-size:12px;color:var(--text2);margin-bottom:3px;">Areas to improve:</div><div style="font-size:13px;">'+esc(r.improvements)+'</div></div>':'')+
+      (r.injuries?'<div style="margin-top:10px;"><div style="font-size:12px;color:var(--danger-text);margin-bottom:3px;">Injuries/incidents:</div><div style="font-size:13px;">'+esc(r.injuries)+'</div></div>':'')+
+      (r.comments?'<div style="margin-top:10px;"><div style="font-size:12px;color:var(--text2);margin-bottom:3px;">Comments:</div><div style="font-size:13px;">'+esc(r.comments)+'</div></div>':'')+
+      (files.length?'<div style="margin-top:10px;"><div style="font-size:12px;color:var(--text2);margin-bottom:4px;">Uploaded files:</div>'+files.map(function(f){return '<a href="'+esc(f.url)+'" target="_blank" class="btn btn-sm" style="margin-right:4px;margin-bottom:4px;"><i class="ti ti-download"></i> '+esc(f.name)+'</a>';}).join('')+'</div>':'')+
+    '</div>';
+  }).join('');
+}
+
+function rField(label,val){
+  if(!val&&val!==0)return '';
+  return '<div><div style="font-size:11px;color:var(--text2);margin-bottom:2px;">'+esc(label)+'</div><div style="font-size:13px;">'+esc(String(val))+'</div></div>';
 }
 
 (async function(){
