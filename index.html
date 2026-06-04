@@ -418,37 +418,46 @@ async function openCourse(id){
       if(s.type==='quiz'&&qr)statusBadge='<span class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-left:8px;">'+(qr.passed?'Passed':'Failed')+'</span>';
       else if(s.type!=='quiz'&&done)statusBadge='<span class="badge badge-success" style="margin-left:8px;"><i class="ti ti-check"></i> Done</span>';
     }
-    var secId='coursesec'+si;
-    var chevId='coursechev'+si;
-    body+='<div style="border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;">';
-    body+='<div onclick="document.getElementById(''+secId+'').style.display=document.getElementById(''+secId+'').style.display==='none'?'block':'none';document.getElementById(''+chevId+'').style.transform=document.getElementById(''+secId+'').style.display==='block'?'rotate(180deg)':'';" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:var(--bg2);">';
-    body+='<div class="section-type-icon '+tc+'" style="flex-shrink:0;width:26px;height:26px;font-size:13px;"><i class="ti ti-'+ti+'"></i></div>';
-    body+='<div style="flex:1;min-width:0;"><div style="font-weight:500;font-size:14px;">'+esc(s.title)+'</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">'+typelabel+'</div></div>';
-    body+=statusBadge;
-    body+='<i id="'+chevId+'" class="ti ti-chevron-down" style="font-size:14px;color:var(--text2);transition:transform 0.2s;flex-shrink:0;margin-left:6px;"></i>';
-    body+='</div>';
-    body+='<div id="'+secId+'" style="display:none;padding:14px;border-top:0.5px solid var(--border);background:var(--bg);">';
+    var inner='';
     if(isAdmin){
-      if(s.type==='quiz')body+='<button class="btn btn-sm" onclick="openQuizEditor('+s.id+')"><i class="ti ti-edit"></i> Edit questions</button>';
-      if(s.type==='file')body+='<button class="btn btn-sm" onclick="openFileUploader('+s.id+')"><i class="ti ti-upload"></i> Upload file</button>'+(s.url?'<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm" style="margin-left:6px;"><i class="ti ti-external-link"></i> View file</a>':'');
-      if(s.type==='video')body+='<div style="font-size:13px;color:var(--text2);">URL: '+esc(s.url||'Not set')+'</div>';
-      if(s.type==='text')body+='<div style="font-size:13px;color:var(--text2);line-height:1.7;">'+esc(s.content||'No content').replace(/
-/g,'<br>')+'</div>';
+      if(s.type==='quiz')inner+='<button class="btn btn-sm" onclick="openQuizEditor('+s.id+')"><i class="ti ti-edit"></i> Edit questions</button>';
+      if(s.type==='file')inner+='<button class="btn btn-sm" onclick="openFileUploader('+s.id+')"><i class="ti ti-upload"></i> Upload file</button>'+(s.url?'<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm" style="margin-left:6px;"><i class="ti ti-external-link"></i> View file</a>':'');
+      if(s.type==='video')inner+='<div style="font-size:13px;color:var(--text2);">URL: '+esc(s.url||'Not set')+'</div>';
+      if(s.type==='text')inner+='<div style="font-size:13px;color:var(--text2);line-height:1.7;">'+esc(s.content||'No content').split('\n').join('<br>')+'</div>';
     } else {
-      if(s.type==='video'&&s.url)body+='<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i> Watch on YouTube</a>';
-      if(s.type==='text'&&s.content)body+='<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px;">'+esc(s.content).replace(/
-/g,'<br>')+'</div>';
-      if(s.type==='file'&&s.url)body+='<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-download"></i> View / Download</a>';
+      if(s.type==='video'&&s.url)inner+='<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i> Watch on YouTube</a>';
+      if(s.type==='text'&&s.content)inner+='<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px;">'+esc(s.content).split('\n').join('<br>')+'</div>';
+      if(s.type==='file'&&s.url)inner+='<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-download"></i> View / Download</a>';
       if(s.type==='quiz'){
-        if(qr)body+='<div class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-bottom:10px;display:inline-flex;">'+(qr.passed?'Passed - '+qr.score+'%':'Failed - '+qr.score+'% (need 70%)')+'</div><br><button class="btn btn-sm" style="margin-top:8px;" onclick="openQuiz('+s.id+','+id+')">Retake quiz</button>';
-        else body+='<button class="btn btn-sm" onclick="openQuiz('+s.id+','+id+')"><i class="ti ti-help-circle"></i> Take quiz</button>';
+        if(qr)inner+='<div class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-bottom:10px;display:inline-flex;">'+(qr.passed?'Passed - '+qr.score+'%':'Failed - '+qr.score+'% (need 70%)')+'</div><br><button class="btn btn-sm" style="margin-top:8px;" onclick="openQuiz('+s.id+','+id+')">Retake quiz</button>';
+        else inner+='<button class="btn btn-sm" onclick="openQuiz('+s.id+','+id+')"><i class="ti ti-help-circle"></i> Take quiz</button>';
       }
-      if(s.type!=='quiz')body+='<div style="margin-top:12px;"><button class="btn btn-sm '+(done?'btn-success':'')+'" onclick="toggleComplete('+s.id+','+!!done+','+id+')">'+(done?'<i class="ti ti-check"></i> Marked done':'Mark as done')+'</button></div>';
+      if(s.type!=='quiz')inner+='<div style="margin-top:12px;"><button class="btn btn-sm '+(done?'btn-success':'')+'" onclick="toggleComplete('+s.id+','+!!done+','+id+')">'+(done?'<i class="ti ti-check"></i> Marked done':'Mark as done')+'</button></div>';
     }
-    body+='</div></div>';
+    body+=[
+      '<div style="border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;">',
+      '<div class="sec-hdr" data-target="csec'+si+'" data-chev="cchev'+si+'" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:var(--bg2);">',
+      '<div class="section-type-icon '+tc+'" style="flex-shrink:0;width:26px;height:26px;font-size:13px;"><i class="ti ti-'+ti+'"></i></div>',
+      '<div style="flex:1;min-width:0;"><div style="font-weight:500;font-size:14px;">'+esc(s.title)+'</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">'+typelabel+'</div></div>',
+      statusBadge,
+      '<i id="cchev'+si+'" class="ti ti-chevron-down" style="font-size:14px;color:var(--text2);transition:transform 0.2s;flex-shrink:0;margin-left:6px;"></i>',
+      '</div>',
+      '<div id="csec'+si+'" style="display:none;padding:14px;border-top:0.5px solid var(--border);background:var(--bg);">'+inner+'</div>',
+      '</div>'
+    ].join('');
   });
   document.getElementById('modal-body').innerHTML=body;
   document.getElementById('modal').style.display='flex';
+  // attach toggle handlers after DOM is set
+  document.querySelectorAll('.sec-hdr').forEach(function(hdr){
+    hdr.addEventListener('click',function(){
+      var t=document.getElementById(hdr.dataset.target);
+      var c=document.getElementById(hdr.dataset.chev);
+      var open=t.style.display==='none';
+      t.style.display=open?'block':'none';
+      if(c)c.style.transform=open?'rotate(180deg)':'';
+    });
+  });
 }
 
 async function toggleComplete(sid,isDone,courseId){
