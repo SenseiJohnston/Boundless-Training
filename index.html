@@ -84,6 +84,7 @@ textarea.form-input{resize:vertical;min-height:80px;}
 .type-text{background:var(--success-bg);color:var(--success-text);}
 .type-quiz{background:var(--warning-bg);color:var(--warning-text);}
 .type-file{background:var(--bg2);color:var(--text2);}
+.type-submission{background:#f3e8ff;color:#7c3aed;}
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:1rem;}
 .modal{background:var(--bg);border-radius:var(--radius-lg);border:0.5px solid var(--border);padding:1.5rem;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;}
 .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
@@ -398,36 +399,46 @@ async function openCourse(id){
   var course=allCourses.find(function(c){return c.id===id;});if(!course)return;
   var secs=course.sections||[];
   document.getElementById('modal-title').textContent=course.title;
-  var compMap={},qrMap={};
+  var compMap={},qrMap={},subMap={};
   if(currentUser&&secs.length){
     var sids=secs.map(function(s){return s.id;});
     var {data:comps}=await sb.from('completions').select('section_id').eq('user_id',currentUser.id).in('section_id',sids);
     (comps||[]).forEach(function(c){compMap[c.section_id]=true;});
     var {data:qrs}=await sb.from('quiz_results').select('*').eq('user_id',currentUser.id).in('section_id',sids);
     (qrs||[]).forEach(function(r){qrMap[r.section_id]=r;});
+    var {data:subs}=await sb.from('video_submissions').select('*').eq('user_id',currentUser.id).in('section_id',sids);
+    (subs||[]).forEach(function(r){subMap[r.section_id]=r;});
   }
   var isAdmin=currentProfile&&currentProfile.is_admin;
   var body='<p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">'+esc(course.description||'')+'</p>';
   secs.forEach(function(s,si){
     var done=compMap[s.id],qr=qrMap[s.id];
-    var tc=s.type==='video'?'type-video':s.type==='quiz'?'type-quiz':s.type==='file'?'type-file':'type-text';
-    var ti=s.type==='video'?'brand-youtube':s.type==='quiz'?'help-circle':s.type==='file'?'paperclip':'file-text';
-    var typelabel=s.type==='video'?'Video':s.type==='quiz'?'Quiz':s.type==='file'?'File':'Text';
+    var tc=s.type==='video'?'type-video':s.type==='quiz'?'type-quiz':s.type==='file'?'type-file':s.type==='submission'?'type-submission':'type-text';
+    var ti=s.type==='video'?'brand-youtube':s.type==='quiz'?'help-circle':s.type==='file'?'paperclip':s.type==='submission'?'video':'file-text';
+    var typelabel=s.type==='video'?'Video':s.type==='quiz'?'Quiz':s.type==='file'?'File':s.type==='submission'?'Video Submission':'Text';
+    var sub=subMap[s.id];
     var statusBadge='';
     if(!isAdmin){
       if(s.type==='quiz'&&qr)statusBadge='<span class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-left:8px;">'+(qr.passed?'Passed':'Failed')+'</span>';
-      else if(s.type!=='quiz'&&done)statusBadge='<span class="badge badge-success" style="margin-left:8px;"><i class="ti ti-check"></i> Done</span>';
+      else if(s.type==='submission'&&sub){
+        if(sub.status==='approved')statusBadge='<span class="badge badge-success" style="margin-left:8px;"><i class="ti ti-circle-check"></i> Approved</span>';
+        else if(sub.status==='redo')statusBadge='<span class="badge badge-danger" style="margin-left:8px;"><i class="ti ti-refresh"></i> Redo requested</span>';
+        else statusBadge='<span class="badge badge-warning" style="margin-left:8px;"><i class="ti ti-clock"></i> Pending review</span>';
+      }
+      else if(s.type!=='quiz'&&s.type!=='submission'&&done)statusBadge='<span class="badge badge-success" style="margin-left:8px;"><i class="ti ti-check"></i> Done</span>';
     }
     var inner='';
     if(isAdmin){
       if(s.type==='quiz')inner+='<button class="btn btn-sm" onclick="openQuizEditor('+s.id+')"><i class="ti ti-edit"></i> Edit questions</button>';
       if(s.type==='file')inner+='<button class="btn btn-sm" onclick="openFileUploader('+s.id+')"><i class="ti ti-upload"></i> Upload file</button>'+(s.url?'<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm" style="margin-left:6px;"><i class="ti ti-external-link"></i> View file</a>':'');
+      if(s.type==='submission')inner+=renderAdminSubmissions(s.id,id);
       if(s.type==='video')inner+='<div style="font-size:13px;color:var(--text2);">URL: '+esc(s.url||'Not set')+'</div>';
       if(s.type==='text')inner+='<div style="font-size:13px;color:var(--text2);line-height:1.7;">'+esc(s.content||'No content').split('\n').join('<br>')+'</div>';
     } else {
       if(s.type==='video'&&s.url)inner+='<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i> Watch on YouTube</a>';
       if(s.type==='text'&&s.content)inner+='<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px;">'+esc(s.content).split('\n').join('<br>')+'</div>';
       if(s.type==='file'&&s.url)inner+='<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-download"></i> View / Download</a>';
+      if(s.type==='submission')inner+=renderStaffSubmission(s,sub);
       if(s.type==='quiz'){
         if(qr)inner+='<div class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-bottom:10px;display:inline-flex;">'+(qr.passed?'Passed - '+qr.score+'%':'Failed - '+qr.score+'% (need 70%)')+'</div><br><button class="btn btn-sm" style="margin-top:8px;" onclick="openQuiz('+s.id+','+id+')">Retake quiz</button>';
         else inner+='<button class="btn btn-sm" onclick="openQuiz('+s.id+','+id+')"><i class="ti ti-help-circle"></i> Take quiz</button>';
@@ -569,6 +580,7 @@ function renderCourseForm(course){
     if(s.type==='text')ex='<textarea class="form-input" style="margin-top:6px;" placeholder="Text content..." oninput="editingSections['+i+'].content=this.value">'+esc(s.content||'')+'</textarea>';
     if(s.type==='quiz')ex='<div style="font-size:12px;color:var(--text2);margin-top:6px;">Add questions after saving.</div>';
     if(s.type==='file')ex='<div style="font-size:12px;color:var(--text2);margin-top:6px;">Upload file after saving.</div>';
+    if(s.type==='submission')ex='<input class="form-input" style="margin-top:6px;" placeholder="Demo YouTube URL (the technique they should copy)" value="'+esc(s.url||'')+'" oninput="editingSections['+i+'].url=this.value"><textarea class="form-input" style="margin-top:6px;" placeholder="Instructions for staff (e.g. Record yourself performing this technique and paste your YouTube link)" oninput="editingSections['+i+'].content=this.value">'+esc(s.content||'')+'</textarea>';
     return '<div class="section-item" style="flex-direction:column;gap:6px;"><div style="display:flex;align-items:center;gap:8px;width:100%;"><div class="section-type-icon '+tc+'"><i class="ti ti-'+ti+'"></i></div><input class="form-input" style="flex:1;" placeholder="Section title" value="'+esc(s.title||'')+'" oninput="editingSections['+i+'].title=this.value"><button class="btn btn-sm btn-danger" onclick="rmSec('+i+')"><i class="ti ti-trash"></i></button></div>'+ex+'</div>';
   }).join(''):'<div style="font-size:13px;color:var(--text2);padding:8px 0;">No sections yet.</div>';
   document.getElementById('modal-body').innerHTML=
@@ -658,6 +670,86 @@ async function renderProgress(){
   }).join('')+'</tbody>';
   document.getElementById('progress-table-el').innerHTML=thead+tbody;
 }
+
+function renderStaffSubmission(s,sub){
+  var html='';
+  if(s.url)html+='<div style="margin-bottom:12px;"><div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Watch the demo technique:</div><a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i> Watch demo video</a></div>';
+  if(s.content)html+='<div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px;">'+esc(s.content).split('\n').join('<br>')+'</div>';
+  if(sub){
+    var statusHtml='';
+    if(sub.status==='approved')statusHtml='<div class="alert alert-success" style="margin-bottom:12px;"><i class="ti ti-circle-check"></i> Your submission was approved!</div>';
+    else if(sub.status==='redo')statusHtml='<div class="alert alert-danger" style="margin-bottom:12px;"><i class="ti ti-refresh"></i> Redo requested'+(sub.admin_note?': '+esc(sub.admin_note):'')+'</div>';
+    else statusHtml='<div class="alert" style="background:var(--warning-bg);color:var(--warning-text);margin-bottom:12px;"><i class="ti ti-clock"></i> Submitted — pending admin review</div>';
+    html+=statusHtml;
+    html+='<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Your submitted video:</div>';
+    html+='<a href="'+esc(sub.youtube_url)+'" target="_blank" class="btn btn-sm" style="margin-bottom:12px;"><i class="ti ti-brand-youtube"></i> View your submission</a>';
+    html+='<div style="margin-top:4px;"><div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Resubmit a new video:</div>';
+    html+='<div style="display:flex;gap:8px;"><input class="form-input" id="sub-url-'+s.id+'" placeholder="New YouTube URL" style="flex:1;"><button class="btn btn-sm btn-primary" onclick="submitVideo('+s.id+')">Resubmit</button></div></div>';
+  } else {
+    html+='<div style="font-size:13px;font-weight:500;margin-bottom:8px;">Submit your video:</div>';
+    html+='<div style="display:flex;gap:8px;"><input class="form-input" id="sub-url-'+s.id+'" placeholder="Paste your YouTube URL here"><button class="btn btn-sm btn-primary" onclick="submitVideo('+s.id+')"><i class="ti ti-send"></i> Submit</button></div>';
+  }
+  return html;
+}
+
+function renderAdminSubmissions(sectionId, courseId){
+  return '<div id="admin-subs-'+sectionId+'"><div style="font-size:13px;color:var(--text2);">Loading submissions...</div></div><script>loadAdminSubs('+sectionId+','+courseId+')<\/script>';
+}
+
+window.loadAdminSubs=async function(sectionId, courseId){
+  var el=document.getElementById('admin-subs-'+sectionId);
+  if(!el)return;
+  var {data:subs}=await sb.from('video_submissions').select('*, profiles(name)').eq('section_id',sectionId);
+  if(!subs||!subs.length){el.innerHTML='<div style="font-size:13px;color:var(--text2);">No submissions yet.</div>';return;}
+  el.innerHTML=subs.map(function(sub){
+    var statusBadge=sub.status==='approved'?'<span class="badge badge-success"><i class="ti ti-circle-check"></i> Approved</span>':
+      sub.status==='redo'?'<span class="badge badge-danger"><i class="ti ti-refresh"></i> Redo requested</span>':
+      '<span class="badge badge-warning"><i class="ti ti-clock"></i> Pending</span>';
+    return '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'+
+        '<div class="avatar" style="width:26px;height:26px;font-size:10px;">'+esc(ini(sub.profiles?sub.profiles.name:'?'))+'</div>'+
+        '<span style="font-size:13px;font-weight:500;flex:1;">'+esc(sub.profiles?sub.profiles.name:'Unknown')+'</span>'+
+        statusBadge+
+      '</div>'+
+      '<a href="'+esc(sub.youtube_url)+'" target="_blank" class="btn btn-sm" style="margin-bottom:8px;"><i class="ti ti-brand-youtube"></i> Watch submission</a>'+
+      (sub.status!=='approved'?'<button class="btn btn-sm btn-success" data-sid="'+sub.id+'" data-secid="'+sectionId+'" data-cid="'+courseId+'" data-action="approve" style="margin-left:6px;"><i class="ti ti-check"></i> Approve</button>':'')+
+      (sub.status!=='redo'?'<button class="btn btn-sm btn-danger" data-sid="'+sub.id+'" data-secid="'+sectionId+'" data-cid="'+courseId+'" data-action="redo" style="margin-left:6px;"><i class="ti ti-refresh"></i> Request redo</button>':'')+
+    '</div>';
+  }).join('');
+  el.querySelectorAll('[data-action]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var sid=parseInt(btn.dataset.sid),secid=parseInt(btn.dataset.secid),cid=parseInt(btn.dataset.cid);
+      if(btn.dataset.action==='approve')reviewSub(sid,'approved',null,secid,cid);
+      else promptRedo(sid,secid,cid);
+    });
+  });
+};
+
+window.submitVideo=async function(sectionId){
+  var url=document.getElementById('sub-url-'+sectionId);
+  if(!url||!url.value.trim()){alert('Please paste your YouTube URL.');return;}
+  var yturl=url.value.trim();
+  await sb.from('video_submissions').upsert({user_id:currentUser.id,section_id:sectionId,youtube_url:yturl,status:'pending',submitted_at:new Date().toISOString()},{onConflict:'user_id,section_id'});
+  var courseId=null;
+  allCourses.forEach(function(c){(c.sections||[]).forEach(function(s){if(s.id===sectionId)courseId=c.id;});});
+  if(courseId)await openCourse(courseId);
+  await renderCourses();
+};
+
+window.reviewSub=async function(subId,status,note,sectionId,courseId){
+  await sb.from('video_submissions').update({status:status,admin_note:note,reviewed_at:new Date().toISOString()}).eq('id',subId);
+  if(status==='approved'){
+    var {data:sub}=await sb.from('video_submissions').select('user_id').eq('id',subId).single();
+    if(sub)await sb.from('completions').upsert({user_id:sub.user_id,section_id:sectionId},{onConflict:'user_id,section_id'});
+  }
+  await loadAdminSubs(sectionId,courseId);
+};
+
+window.promptRedo=function(subId,sectionId,courseId){
+  var note=prompt('Optional: add a note for the instructor (what to improve):');
+  if(note===null)return;
+  reviewSub(subId,'redo',note||null,sectionId,courseId);
+};
 
 function closeModal(){document.getElementById('modal').style.display='none';}
 function closeModalOutside(e){if(e.target.id==='modal')closeModal();}
