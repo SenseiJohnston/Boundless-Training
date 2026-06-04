@@ -407,31 +407,62 @@ async function openCourse(id){
     (qrs||[]).forEach(function(r){qrMap[r.section_id]=r;});
   }
   var isAdmin=currentProfile&&currentProfile.is_admin;
-  var body='<p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">'+esc(course.description||'')+'</p>';
-  secs.forEach(function(s){
+  var body='<p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">'+esc(course.description||'')+'</p>';
+  secs.forEach(function(s,si){
     var done=compMap[s.id],qr=qrMap[s.id];
     var tc=s.type==='video'?'type-video':s.type==='quiz'?'type-quiz':s.type==='file'?'type-file':'type-text';
     var ti=s.type==='video'?'brand-youtube':s.type==='quiz'?'help-circle':s.type==='file'?'paperclip':'file-text';
-    body+='<div class="section-item" style="align-items:flex-start;margin-bottom:10px;"><div class="section-type-icon '+tc+'"><i class="ti ti-'+ti+'"></i></div><div style="flex:1;min-width:0;"><div style="font-weight:500;font-size:14px;">'+esc(s.title)+'</div>';
+    var typelabel=s.type==='video'?'Video':s.type==='quiz'?'Quiz':s.type==='file'?'File':'Text';
+    var statusBadge='';
+    if(!isAdmin){
+      if(s.type==='quiz'&&qr) statusBadge='<span class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-left:8px;">'+(qr.passed?'Passed':'Failed')+'</span>';
+      else if(s.type!=='quiz'&&done) statusBadge='<span class="badge badge-success" style="margin-left:8px;"><i class="ti ti-check"></i> Done</span>';
+    }
+    // collapsible section header
+    body+='<div style="border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;">';
+    body+='<div onclick="toggleSection('sec-'+si+'')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:var(--bg2);">';
+    body+='<div class="section-type-icon '+tc+'" style="flex-shrink:0;width:26px;height:26px;font-size:13px;"><i class="ti ti-'+ti+'"></i></div>';
+    body+='<div style="flex:1;min-width:0;"><div style="font-weight:500;font-size:14px;">'+esc(s.title)+'</div>';
+    body+='<div style="font-size:11px;color:var(--text2);margin-top:2px;">'+typelabel+'</div></div>';
+    body+=statusBadge;
+    body+='<i class="ti ti-chevron-down" id="chev-'+si+'" style="font-size:14px;color:var(--text2);transition:transform 0.2s;flex-shrink:0;"></i>';
+    body+='</div>';
+    // collapsible content
+    body+='<div id="sec-'+si+'" style="display:none;padding:14px;border-top:0.5px solid var(--border);background:var(--bg);">';
     if(isAdmin){
-      var lbl=s.type==='video'?'Video section':s.type==='quiz'?'Quiz section':s.type==='file'?'File section':'Text section';
-      body+='<div style="font-size:12px;color:var(--text2);margin-top:3px;">'+lbl+'</div>';
-      if(s.type==='quiz')body+='<button class="btn btn-sm" style="margin-top:8px;" onclick="openQuizEditor('+s.id+')"><i class="ti ti-edit"></i> Edit questions</button>';
-      if(s.type==='file')body+='<button class="btn btn-sm" style="margin-top:8px;" onclick="openFileUploader('+s.id+')"><i class="ti ti-upload"></i> Upload file</button>'+(s.url?'<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm" style="margin-left:6px;"><i class="ti ti-external-link"></i> View</a>':'');
+      if(s.type==='quiz')body+='<button class="btn btn-sm" onclick="openQuizEditor('+s.id+')"><i class="ti ti-edit"></i> Edit questions</button>';
+      if(s.type==='file')body+='<button class="btn btn-sm" onclick="openFileUploader('+s.id+')"><i class="ti ti-upload"></i> Upload file</button>'+(s.url?'<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm" style="margin-left:6px;"><i class="ti ti-external-link"></i> View file</a>':'');
+      if(s.type==='video')body+='<div style="font-size:13px;color:var(--text2);">URL: '+esc(s.url||'Not set')+'</div>';
+      if(s.type==='text')body+='<div style="font-size:13px;color:var(--text2);line-height:1.7;">'+esc(s.content||'No content').replace(/
+/g,'<br>')+'</div>';
     } else {
-      if(s.type==='video'&&s.url)body+='<div style="margin-top:8px;"><a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i> Watch on YouTube</a></div>';
-      if(s.type==='text'&&s.content)body+='<div style="font-size:13px;color:var(--text2);margin-top:6px;line-height:1.7;">'+esc(s.content).replace(/\n/g,'<br>')+'</div>';
-      if(s.type==='file'&&s.url)body+='<div style="margin-top:8px;"><a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-download"></i> View / Download</a></div>';
+      if(s.type==='video'&&s.url)body+='<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i> Watch on YouTube</a>';
+      if(s.type==='text'&&s.content)body+='<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px;">'+esc(s.content).replace(/
+/g,'<br>')+'</div>';
+      if(s.type==='file'&&s.url)body+='<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-download"></i> View / Download</a>';
       if(s.type==='quiz'){
-        if(qr)body+='<div class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-top:6px;">'+(qr.passed?'Passed '+qr.score+'%':'Failed '+qr.score+'%')+'</div><button class="btn btn-sm" style="margin-top:8px;" onclick="openQuiz('+s.id+','+id+')">Retake quiz</button>';
-        else body+='<button class="btn btn-sm" style="margin-top:8px;" onclick="openQuiz('+s.id+','+id+')"><i class="ti ti-help-circle"></i> Take quiz</button>';
+        if(qr)body+='<div class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-bottom:10px;display:inline-flex;">'+(qr.passed?'Passed — '+qr.score+'%':'Failed — '+qr.score+'% (need 70%)')+'</div><br><button class="btn btn-sm" onclick="openQuiz('+s.id+','+id+')">Retake quiz</button>';
+        else body+='<button class="btn btn-sm" onclick="openQuiz('+s.id+','+id+')"><i class="ti ti-help-circle"></i> Take quiz</button>';
       }
-      if(s.type!=='quiz')body+='<button class="btn btn-sm '+(done?'btn-success':'')+'" style="margin-top:8px;" onclick="toggleComplete('+s.id+','+!!done+','+id+')">'+(done?'<i class="ti ti-check"></i> Marked done':'Mark as done')+'</button>';
+      if(s.type!=='quiz'){
+        body+='<div style="margin-top:12px;">';
+        body+='<button class="btn btn-sm '+(done?'btn-success':'')+'" onclick="toggleComplete('+s.id+','+!!done+','+id+')">'+(done?'<i class="ti ti-check"></i> Marked done':'Mark as done')+'</button>';
+        body+='</div>';
+      }
     }
     body+='</div></div>';
   });
   document.getElementById('modal-body').innerHTML=body;
   document.getElementById('modal').style.display='flex';
+}
+
+function toggleSection(id){
+  var el=document.getElementById(id);
+  var idx=id.split('-')[1];
+  var chev=document.getElementById('chev-'+idx);
+  var open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  if(chev)chev.style.transform=open?'rotate(180deg)':'';
 }
 
 async function toggleComplete(sid,isDone,courseId){
