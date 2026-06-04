@@ -365,7 +365,7 @@ async function loadApp(user){
 }
 
 async function loadCourses(){
-  var {data}=await sb.from('courses').select('*, sections(*)').order('id');
+  var {data}=await sb.from('courses').select('*, sections(*)').order('order_index').order('id');
   allCourses=data||[];
   await renderCourses();
 }
@@ -406,6 +406,8 @@ async function renderCourses(){
     if(currentProfile&&currentProfile.is_admin){
       meta='<span>'+total+' sections</span>';
       right='<div style="display:flex;gap:6px;flex-shrink:0;" onclick="event.stopPropagation()">'+
+        '<button class="btn btn-sm" onclick="moveCourse('+c.id+',-1)" title="Move up"><i class="ti ti-arrow-up"></i></button>'+
+        '<button class="btn btn-sm" onclick="moveCourse('+c.id+',1)" title="Move down"><i class="ti ti-arrow-down"></i></button>'+
         '<button class="btn btn-sm" onclick="openEditCourse('+c.id+')"><i class="ti ti-edit"></i></button>'+
         '<button class="btn btn-sm btn-danger" onclick="deleteCourse('+c.id+')"><i class="ti ti-trash"></i></button></div>';
     } else {
@@ -632,6 +634,20 @@ async function saveCourse(){
   if(editingSections.length)await sb.from('sections').insert(editingSections.map(function(s,i){return{course_id:cid,type:s.type,title:s.title||'Untitled',content:s.content||null,url:s.url||null,order_index:i};}));
   closeModal();await loadCourses();
 }
+async function moveCourse(id, direction){
+  var idx=allCourses.findIndex(function(c){return c.id===id;});
+  var newIdx=idx+direction;
+  if(newIdx<0||newIdx>=allCourses.length)return;
+  // swap in local array
+  var tmp=allCourses[idx];
+  allCourses[idx]=allCourses[newIdx];
+  allCourses[newIdx]=tmp;
+  // save new order_index values to db
+  var updates=allCourses.map(function(c,i){return sb.from('courses').update({order_index:i}).eq('id',c.id);});
+  await Promise.all(updates);
+  await renderCourses();
+}
+
 async function deleteCourse(id){
   if(!confirm('Delete this course? This cannot be undone.'))return;
   await sb.from('courses').delete().eq('id',id);await loadCourses();
