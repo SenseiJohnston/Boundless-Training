@@ -373,6 +373,29 @@ async function loadCourses(){
 async function renderCourses(){
   var list=document.getElementById('course-list');
   if(!allCourses.length){list.innerHTML='<div class="empty-state"><i class="ti ti-books"></i>No courses yet.</div>';return;}
+  // Check for redo submissions for staff
+  if(currentUser&&(!currentProfile||!currentProfile.is_admin)){
+    var allSids=[];
+    allCourses.forEach(function(c){(c.sections||[]).forEach(function(s){if(s.type==='submission')allSids.push({sid:s.id,cid:c.id,ctitle:c.title});});});
+    var banner=document.getElementById('redo-banner');
+    if(!banner){
+      banner=document.createElement('div');
+      banner.id='redo-banner';
+      list.parentNode.insertBefore(banner,list);
+    }
+    if(allSids.length){
+      var {data:redos}=await sb.from('video_submissions').select('section_id').eq('user_id',currentUser.id).eq('status','redo').in('section_id',allSids.map(function(x){return x.sid;}));
+      if(redos&&redos.length){
+        var redoSids=redos.map(function(r){return r.section_id;});
+        var redoCourses=[...new Set(allSids.filter(function(x){return redoSids.indexOf(x.sid)!==-1;}).map(function(x){return x.ctitle;}))];
+        banner.innerHTML='<div style="background:var(--danger-bg);border:0.5px solid var(--danger-border);border-radius:var(--radius);padding:12px 16px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;"><i class="ti ti-refresh" style="color:var(--danger-text);font-size:18px;flex-shrink:0;"></i><div><div style="font-size:14px;font-weight:500;color:var(--danger-text);">Redo requested on '+redos.length+' submission'+(redos.length>1?'s':'')+'</div><div style="font-size:12px;color:var(--danger-text);opacity:0.8;margin-top:2px;">'+redoCourses.map(function(t){return esc(t);}).join(', ')+'</div></div></div>';
+      } else {
+        banner.innerHTML='';
+      }
+    } else {
+      banner.innerHTML='';
+    }
+  }
   var compMap={};
   if(currentUser&&(!currentProfile||!currentProfile.is_admin)){
     var sids=[];allCourses.forEach(function(c){(c.sections||[]).forEach(function(s){sids.push(s.id);});});
@@ -443,7 +466,7 @@ async function openCourse(id){
         if(qr)inner+='<div class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-bottom:10px;display:inline-flex;">'+(qr.passed?'Passed - '+qr.score+'%':'Failed - '+qr.score+'% (need 70%)')+'</div><br><button class="btn btn-sm" style="margin-top:8px;" onclick="openQuiz('+s.id+','+id+')">Retake quiz</button>';
         else inner+='<button class="btn btn-sm" onclick="openQuiz('+s.id+','+id+')"><i class="ti ti-help-circle"></i> Take quiz</button>';
       }
-      if(s.type!=='quiz')inner+='<div style="margin-top:12px;"><button class="btn btn-sm '+(done?'btn-success':'')+'" onclick="toggleComplete('+s.id+','+!!done+','+id+')">'+(done?'<i class="ti ti-check"></i> Marked done':'Mark as done')+'</button></div>';
+      if(s.type!=='quiz'&&s.type!=='submission')inner+='<div style="margin-top:12px;"><button class="btn btn-sm '+(done?'btn-success':'')+'" onclick="toggleComplete('+s.id+','+!!done+','+id+')">'+(done?'<i class="ti ti-check"></i> Marked done':'Mark as done')+'</button></div>';
     }
     body+=[
       '<div style="border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;">',
