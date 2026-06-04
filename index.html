@@ -641,7 +641,9 @@ function openInviteStaff(){
 
 async function renderProgress(){
   var sel=document.getElementById('progress-course-select');if(!sel)return;
+  var prevVal=sel.value;
   sel.innerHTML=allCourses.map(function(c){return '<option value="'+c.id+'">'+esc(c.title)+'</option>';}).join('');
+  if(prevVal)sel.value=prevVal;
   var cid=parseInt(sel.value),course=allCourses.find(function(c){return c.id===cid;});
   if(!course||!allStaff.length){document.getElementById('progress-metrics').innerHTML='';document.getElementById('progress-table-el').innerHTML='<tr><td style="padding:1rem;color:var(--text2);font-size:13px;">No data.</td></tr>';return;}
   var secs=course.sections||[],sids=secs.map(function(s){return s.id;}),uids=allStaff.map(function(s){return s.id;});
@@ -694,7 +696,8 @@ function renderStaffSubmission(s,sub){
 }
 
 function renderAdminSubmissions(sectionId, courseId){
-  return '<div id="admin-subs-'+sectionId+'"><div style="font-size:13px;color:var(--text2);">Loading submissions...</div></div><script>loadAdminSubs('+sectionId+','+courseId+')<\/script>';
+  setTimeout(function(){loadAdminSubs(sectionId,courseId);},50);
+  return '<div id="admin-subs-'+sectionId+'"><div style="font-size:13px;color:var(--text2);">Loading submissions...</div></div>';
 }
 
 window.loadAdminSubs=async function(sectionId, courseId){
