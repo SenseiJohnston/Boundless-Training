@@ -528,28 +528,31 @@ async function openQuiz(sectionId,courseId){
   document.getElementById('modal').style.display='flex';
 }
 
+var quizEditorQs=[];
 async function openQuizEditor(sectionId){
   var {data:existing}=await sb.from('quiz_questions').select('*').eq('section_id',sectionId);
-  var qs=(existing||[]).map(function(q){return{id:q.id,question:q.question,options:q.options||['',''],correct_index:q.correct_index||0};});
+  quizEditorQs=(existing||[]).map(function(q){return{id:q.id,question:q.question,options:q.options||['',''],correct_index:q.correct_index||0};});
+  var qs=quizEditorQs;
   function renderQE(){
+    var qs=quizEditorQs;
     var b=qs.map(function(q,qi){
       return '<div style="background:var(--bg2);border-radius:var(--radius);padding:12px;margin-bottom:10px;">'+
         '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;font-weight:500;">Q'+(qi+1)+'</span><button class="btn btn-sm btn-danger" onclick="dq('+qi+')"><i class="ti ti-trash"></i></button></div>'+
-        '<input class="form-input" style="margin-bottom:8px;" placeholder="Question" value="'+esc(q.question)+'" oninput="qs['+qi+'].question=this.value">'+
-        q.options.map(function(opt,oi){return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><input type="radio" name="c'+qi+'" '+(q.correct_index===oi?'checked':'')+' onchange="qs['+qi+'].correct_index='+oi+'" style="width:16px;height:16px;cursor:pointer;"><input class="form-input" style="flex:1;" placeholder="Option '+(oi+1)+'" value="'+esc(opt)+'" oninput="qs['+qi+'].options['+oi+']=this.value"></div>';}).join('')+
+        '<input class="form-input" style="margin-bottom:8px;" placeholder="Question" value="'+esc(q.question)+'" oninput="quizEditorQs['+qi+'].question=this.value">'+
+        q.options.map(function(opt,oi){return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><input type="radio" name="c'+qi+'" '+(q.correct_index===oi?'checked':'')+' onchange="qs['+qi+'].correct_index='+oi+'" style="width:16px;height:16px;cursor:pointer;"><input class="form-input" style="flex:1;" placeholder="Option '+(oi+1)+'" value="'+esc(opt)+'" oninput="quizEditorQs['+qi+'].options['+oi+']=this.value"></div>';}).join('')+
         '<button class="btn btn-sm" onclick="ao('+qi+')" style="margin-top:4px;"><i class="ti ti-plus"></i> Add option</button></div>';
     }).join('');
     b+='<button class="btn btn-sm" onclick="aq()" style="margin-bottom:1rem;"><i class="ti ti-plus"></i> Add question</button>'+
        '<br><button class="btn btn-primary" style="width:100%;margin-top:0.5rem;" onclick="saveQE('+sectionId+')"><i class="ti ti-check"></i> Save quiz</button>';
     document.getElementById('modal-body').innerHTML=b;
   }
-  window.aq=function(){qs.push({question:'',options:['',''],correct_index:0});renderQE();};
-  window.dq=function(i){qs.splice(i,1);renderQE();};
-  window.ao=function(qi){qs[qi].options.push('');renderQE();};
+  window.aq=function(){quizEditorQs.push({question:'',options:['',''],correct_index:0});renderQE();};
+  window.dq=function(i){quizEditorQs.splice(i,1);renderQE();};
+  window.ao=function(qi){quizEditorQs[qi].options.push('');renderQE();};
   window.saveQE=async function(sid){
     var {error:delErr}=await sb.from('quiz_questions').delete().eq('section_id',sid);
     if(delErr){alert('Delete error: '+delErr.message);return;}
-    var valid=qs.filter(function(q){return q.question.trim()&&q.options.length>=2;});
+    var valid=quizEditorQs.filter(function(q){return q.question.trim()&&q.options.length>=2;});
     if(!valid.length){alert('No valid questions to save - make sure each question has text and at least 2 options.');return;}
     var toInsert=valid.map(function(q){return{section_id:sid,question:q.question,options:q.options,correct_index:q.correct_index||0};});
     console.log('Inserting quiz questions:', JSON.stringify(toInsert));
