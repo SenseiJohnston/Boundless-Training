@@ -618,9 +618,26 @@ async function saveCourse(){
   if(!title){alert('Please enter a course title.');return;}
   var btn=document.getElementById('sc-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Saving...';
   var cid=editingCourse;
-  if(editingCourse){await sb.from('courses').update({title,description:desc}).eq('id',editingCourse);await sb.from('sections').delete().eq('course_id',editingCourse);}
-  else{var {data:nc}=await sb.from('courses').insert({title,description:desc}).select().single();cid=nc.id;}
-  if(editingSections.length)await sb.from('sections').insert(editingSections.map(function(s,i){return{course_id:cid,type:s.type,title:s.title||'Untitled',content:s.content||null,url:s.url||null,order_index:i};}));
+  if(editingCourse){
+    await sb.from('courses').update({title,description:desc}).eq('id',editingCourse);
+    // delete sections that were removed
+    var keepIds=editingSections.filter(function(s){return s.id;}).map(function(s){return s.id;});
+    var existingIds=(allCourses.find(function(c){return c.id===editingCourse;})||{sections:[]}).sections.map(function(s){return s.id;});
+    var toDelete=existingIds.filter(function(id){return keepIds.indexOf(id)===-1;});
+    if(toDelete.length)await sb.from('sections').delete().in('id',toDelete);
+    // update existing sections
+    var existing=editingSections.filter(function(s){return s.id;});
+    for(var i=0;i<existing.length;i++){
+      var s=existing[i];
+      await sb.from('sections').update({title:s.title||'Untitled',content:s.content||null,url:s.url||null,order_index:editingSections.indexOf(s)}).eq('id',s.id);
+    }
+    // insert new sections
+    var newSecs=editingSections.filter(function(s){return !s.id;});
+    if(newSecs.length)await sb.from('sections').insert(newSecs.map(function(s,i){return{course_id:cid,type:s.type,title:s.title||'Untitled',content:s.content||null,url:s.url||null,order_index:editingSections.indexOf(s)};}));
+  } else {
+    var {data:nc}=await sb.from('courses').insert({title,description:desc}).select().single();cid=nc.id;
+    if(editingSections.length)await sb.from('sections').insert(editingSections.map(function(s,i){return{course_id:cid,type:s.type,title:s.title||'Untitled',content:s.content||null,url:s.url||null,order_index:i};}));
+  }
   closeModal();await loadCourses();
 }
 async function moveCourse(id, direction){
