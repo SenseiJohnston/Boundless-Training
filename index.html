@@ -547,10 +547,16 @@ async function openQuizEditor(sectionId){
   window.dq=function(i){qs.splice(i,1);renderQE();};
   window.ao=function(qi){qs[qi].options.push('');renderQE();};
   window.saveQE=async function(sid){
-    await sb.from('quiz_questions').delete().eq('section_id',sid);
+    var {error:delErr}=await sb.from('quiz_questions').delete().eq('section_id',sid);
+    if(delErr){alert('Delete error: '+delErr.message);return;}
     var valid=qs.filter(function(q){return q.question.trim()&&q.options.length>=2;});
-    if(valid.length)await sb.from('quiz_questions').insert(valid.map(function(q){return{section_id:sid,question:q.question,options:q.options,correct_index:q.correct_index};}));
-    closeModal();alert('Quiz saved!');
+    if(!valid.length){alert('No valid questions to save - make sure each question has text and at least 2 options.');return;}
+    var toInsert=valid.map(function(q){return{section_id:sid,question:q.question,options:q.options,correct_index:q.correct_index||0};});
+    console.log('Inserting quiz questions:', JSON.stringify(toInsert));
+    var {data,error}=await sb.from('quiz_questions').insert(toInsert).select();
+    console.log('Insert result:', data, error);
+    if(error){alert('Save error: '+error.message);return;}
+    closeModal();alert('Quiz saved! '+toInsert.length+' question(s) saved.');
   };
   document.getElementById('modal-title').textContent='Edit quiz questions';
   renderQE();
