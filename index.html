@@ -533,7 +533,7 @@ async function openQuizEditor(sectionId){
   var {data:existing}=await sb.from('quiz_questions').select('*').eq('section_id',sectionId);
   quizEditorQs=(existing||[]).map(function(q){return{id:q.id,question:q.question,options:q.options||['',''],correct_index:q.correct_index||0};});
   var qs=quizEditorQs;
-  function renderQE(){
+  window.renderQE=function(){
     var qs=quizEditorQs;
     var b=qs.map(function(q,qi){
       return '<div style="background:var(--bg2);border-radius:var(--radius);padding:12px;margin-bottom:10px;">'+
@@ -552,7 +552,9 @@ async function openQuizEditor(sectionId){
   window.saveQE=async function(sid){
     var {error:delErr}=await sb.from('quiz_questions').delete().eq('section_id',sid);
     if(delErr){alert('Delete error: '+delErr.message);return;}
+    console.log('quizEditorQs at save:', JSON.stringify(quizEditorQs));
     var valid=quizEditorQs.filter(function(q){return q.question.trim()&&q.options.length>=2;});
+    console.log('valid questions:', valid.length);
     if(!valid.length){alert('No valid questions to save - make sure each question has text and at least 2 options.');return;}
     var toInsert=valid.map(function(q){return{section_id:sid,question:q.question,options:q.options,correct_index:q.correct_index||0};});
     console.log('Inserting quiz questions:', JSON.stringify(toInsert));
