@@ -196,6 +196,10 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--
           <label class="form-label">Date of classes</label>
           <input class="form-input" type="date" id="dr-date">
         </div>
+        <div class="form-group">
+          <label class="form-label">What are 2 key lessons or points from this week's video lesson?</label>
+          <textarea class="form-input" id="dr-video-lessons" placeholder="1. &#10;2. "></textarea>
+        </div>
 
         <div class="divider"></div>
         <div class="form-group">
@@ -863,6 +867,7 @@ async function submitDailyReport(){
   var report={
     user_id:currentUser.id,
     report_date:date,
+    video_lessons:document.getElementById('dr-video-lessons')?document.getElementById('dr-video-lessons').value:'',
     social_media_post:document.getElementById('dr-social').value,
     social_media_files:fileUrls,
     attendance_followup:document.getElementById('dr-attendance').value,
@@ -882,7 +887,7 @@ async function submitDailyReport(){
   } else {
     document.getElementById('dr-status').innerHTML='<div class="alert alert-success"><i class="ti ti-circle-check"></i> Report submitted successfully!</div>';
     // reset form
-    ['dr-sick','dr-above','dr-improve','dr-injuries','dr-comments'].forEach(function(id){document.getElementById(id).value='';});
+    ['dr-video-lessons','dr-sick','dr-above','dr-improve','dr-injuries','dr-comments'].forEach(function(id){document.getElementById(id).value='';});
     ['dr-social','dr-attendance'].forEach(function(id){document.getElementById(id).value='';});
     document.getElementById('dr-families').value='';
     ['m1','m2','m3','m4'].forEach(function(id){document.getElementById(id).checked=false;});
@@ -910,6 +915,7 @@ async function loadReportLog(){
         '<span class="badge badge-info">'+esc(r.report_date)+'</span>'+
       '</div>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">'+
+        rField('Video lesson takeaways',r.video_lessons)+
         rField('Social media',r.social_media_post)+
         rField('Attendance followup',r.attendance_followup)+
         rField('Families connected',r.families_connected)+
