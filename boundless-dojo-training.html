@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boundless Dojo Training</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#1a2235;--bg2:#222d42;--bg3:#131b2e;
+  --text:#e8edf5;--text2:#8a9bb8;--text3:#5a6a85;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+  --radius:8px;--radius-lg:12px;
+  --success-bg:#0d2d1a;--success-text:#4ade80;
+  --warning-bg:#2d1f0a;--warning-text:#fbbf24;
+  --info-bg:#0a1f3d;--info-text:#60a5fa;
+  --danger-bg:#2d0f0f;--danger-text:#f87171;
+  --danger-border:rgba(248,113,113,0.3);
+  --accent:#3b82f6;--accent-hover:#2563eb;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5;}
+.topbar{background:#111827;border-bottom:0.5px solid var(--border);padding:0 1.5rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.logo{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.logo i{font-size:20px;color:var(--text2);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.user-info{font-size:13px;color:var(--text2);}
+.nav-tabs{background:#111827;border-bottom:0.5px solid var(--border);display:flex;padding:0 1.5rem;overflow-x:auto;}
+.nav-tab{padding:11px 16px;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);margin-bottom:-0.5px;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:color 0.15s;}
+.nav-tab.active{border-bottom-color:var(--accent);color:var(--accent);font-weight:500;}
+.nav-tab:hover:not(.active){color:var(--text);}
+.content{padding:1.5rem;max-width:900px;margin:0 auto;}
+.page{display:none;}.page.active{display:block;}
+.section-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:1rem;flex-wrap:wrap;}
+.section-title{font-size:17px;font-weight:600;}
+.section-sub{font-size:13px;color:var(--text2);margin-top:3px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);cursor:pointer;color:var(--text);transition:background 0.15s;font-family:inherit;}
+.btn:hover{background:var(--bg2);}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-primary:hover{opacity:1;background:var(--accent-hover);border-color:var(--accent-hover);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.btn-danger{color:var(--danger-text);border-color:var(--danger-border);}
+.btn-danger:hover{background:var(--danger-bg);}
+.btn-success{background:var(--success-bg);color:var(--success-text);border-color:rgba(59,109,17,0.3);}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:0.75rem;transition:border-color 0.15s;}
+.card.clickable{cursor:pointer;}
+.card.clickable:hover{border-color:var(--border2);}
+.card-title{font-size:15px;font-weight:500;}
+.card-meta{font-size:13px;color:var(--text2);margin-top:5px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;}
+.badge-success{background:var(--success-bg);color:var(--success-text);}
+.badge-warning{background:var(--warning-bg);color:var(--warning-text);}
+.badge-info{background:var(--info-bg);color:var(--info-text);}
+.badge-neutral{background:var(--bg2);color:var(--text2);}
+.badge-danger{background:var(--danger-bg);color:var(--danger-text);}
+.progress-bar-wrap{height:4px;background:var(--bg3);border-radius:2px;margin-top:10px;}
+.progress-bar{height:4px;border-radius:2px;background:var(--accent);transition:width 0.4s ease;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+.metric-card{background:var(--bg2);border-radius:var(--radius);padding:1rem 1.25rem;}
+.metric-label{font-size:12px;color:var(--text2);margin-bottom:5px;}
+.metric-value{font-size:24px;font-weight:600;}
+.form-group{margin-bottom:1rem;}
+.form-label{font-size:13px;color:var(--text2);margin-bottom:5px;display:block;}
+.form-input{width:100%;padding:9px 12px;font-size:14px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:inherit;transition:border-color 0.15s;}
+.form-input:focus{outline:none;border-color:var(--accent);}
+textarea.form-input{resize:vertical;min-height:80px;}
+.section-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;background:var(--bg);}
+.section-type-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:1px;}
+.type-video{background:var(--info-bg);color:var(--info-text);}
+.type-text{background:var(--success-bg);color:var(--success-text);}
+.type-quiz{background:var(--warning-bg);color:var(--warning-text);}
+.type-file{background:var(--bg2);color:var(--text2);}
+.type-submission{background:#1e1a3d;color:#a78bfa;}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:1rem;}
+.modal{background:var(--bg);border-radius:var(--radius-lg);border:0.5px solid var(--border);padding:1.5rem;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.modal-title{font-size:16px;font-weight:600;}
+.modal-close{cursor:pointer;color:var(--text2);font-size:20px;border:none;background:none;padding:2px;line-height:1;}
+.modal-close:hover{color:var(--text);}
+.staff-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.staff-row:last-child{border-bottom:none;}
+.avatar{width:34px;height:34px;border-radius:50%;background:#1e3a5f;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#60a5fa;flex-shrink:0;}
+.divider{height:0.5px;background:var(--border);margin:1rem 0;}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text2);font-size:14px;}
+.empty-state i{font-size:36px;display:block;margin-bottom:0.75rem;opacity:0.35;}
+.quiz-option{display:flex;align-items:center;gap:10px;padding:10px 14px;border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;transition:background 0.15s,border-color 0.15s;}
+.quiz-option:hover{background:var(--bg2);}
+.quiz-option.selected{border-color:var(--info-text);background:var(--info-bg);}
+.quiz-option.correct{border-color:var(--success-text);background:var(--success-bg);}
+.quiz-option.wrong{border-color:var(--danger-text);background:var(--danger-bg);}
+.upload-area{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;}
+.upload-area:hover{border-color:var(--text);background:var(--bg2);}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--text);border-radius:50%;animation:spin 0.6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.alert{padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:1rem;}
+.alert-danger{background:var(--danger-bg);color:var(--danger-text);}
+.alert-success{background:var(--success-bg);color:var(--success-text);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:8px 10px;font-weight:400;color:var(--text2);border-bottom:0.5px solid var(--border);}
+td{padding:8px 10px;border-bottom:0.5px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+.table-wrap{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+.overflow-x{overflow-x:auto;}
+input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--text);}
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.auth-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:400px;}
+.auth-logo{text-align:center;margin-bottom:1.5rem;}
+.auth-logo i{font-size:32px;color:var(--text2);}
+.auth-title{font-size:20px;font-weight:600;text-align:center;margin-bottom:0.25rem;}
+.auth-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:1.5rem;}
+.auth-tabs{display:flex;gap:0;margin-bottom:1.5rem;border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.auth-tab{flex:1;padding:8px;text-align:center;font-size:13px;cursor:pointer;color:var(--text2);transition:background 0.15s;}
+.auth-tab.active{background:var(--accent);color:#fff;font-weight:500;}
+@media(max-width:600px){
+  .content{padding:1rem;}
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+  .section-header{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<div id="auth-screen" class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo"><img src="https://brrjkeekzettqdbewlfe.supabase.co/storage/v1/object/public/uploads/Boundless%20logo%202024-11.png" style="width:64px;height:64px;border-radius:50%;background:#000;"></div>
+    <div class="auth-title">Boundless Dojo Training</div>
+    <div class="auth-sub">Sign in to access your training courses</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign in</div>
+      <div class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Create account</div>
+    </div>
+    <div id="auth-error" class="alert alert-danger" style="display:none;"></div>
+    <div id="signin-form">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="si-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="si-password" placeholder="••••••••"></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="signIn()" id="signin-btn"><i class="ti ti-login"></i> Sign in</button>
+    </div>
+    <div id="signup-form" style="display:none;">
+      <div class="form-group"><label class="form-label">Full name</label><input class="form-input" type="text" id="su-name" placeholder="e.g. Sarah Kim"></div>
+      <div class="form-group"><label class="form-label">Role / Position</label><input class="form-input" type="text" id="su-role" placeholder="e.g. Instructor"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="su-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="su-password" placeholder="At least 6 characters"></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="signUp()" id="signup-btn"><i class="ti ti-user-plus"></i> Create account</button>
+    </div>
+  </div>
+</div>
+
+<div id="main-app" style="display:none;">
+  <div class="topbar">
+    <div class="logo"><img src="https://brrjkeekzettqdbewlfe.supabase.co/storage/v1/object/public/uploads/Boundless%20logo%202024-11.png" style="width:32px;height:32px;border-radius:50%;background:#000;"> Boundless Dojo Training</div>
+    <div class="topbar-right">
+      <span class="user-info" id="user-name-display"></span>
+      <button class="btn btn-sm" onclick="signOut()"><i class="ti ti-logout"></i> Sign out</button>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('courses')" id="tab-courses"><i class="ti ti-books"></i> Courses</div>
+    <div class="nav-tab" onclick="showPage('report')" id="tab-report"><i class="ti ti-clipboard"></i> Daily Report</div>
+    <div class="nav-tab" onclick="showPage('staff')" id="tab-staff" style="display:none;"><i class="ti ti-users"></i> Staff</div>
+    <div class="nav-tab" onclick="showPage('progress')" id="tab-progress" style="display:none;"><i class="ti ti-chart-bar"></i> Progress</div>
+    <div class="nav-tab" onclick="showPage('reportlog')" id="tab-reportlog" style="display:none;"><i class="ti ti-list"></i> Report Log</div>
+  </div>
+  <div class="content">
+    <div class="page active" id="page-courses">
+      <div class="section-header">
+        <div><div class="section-title">Training Courses</div><div class="section-sub" id="courses-sub">Your assigned training content</div></div>
+        <button class="btn btn-primary" id="new-course-btn" style="display:none;" onclick="openNewCourse()"><i class="ti ti-plus"></i> New Course</button>
+      </div>
+      <div id="course-list"></div>
+    </div>
+    <div class="page" id="page-staff">
+      <div class="section-header">
+        <div><div class="section-title">Staff Members</div><div class="section-sub" id="staff-sub">Manage your team</div></div>
+        <button class="btn btn-primary" onclick="openInviteStaff()"><i class="ti ti-link"></i> Get invite link</button>
+      </div>
+      <div class="card" style="padding:0.25rem 1rem;"><div id="staff-list"></div></div>
+    </div>
+    <div class="page" id="page-progress">
+      <div class="section-header">
+        <div><div class="section-title">Completion Tracker</div><div class="section-sub">Track who has completed each section</div></div>
+        <select class="form-input" style="width:auto;min-width:220px;font-size:13px;padding:7px 10px;" id="progress-course-select" onchange="renderProgress()"></select>
+      </div>
+      <div class="grid-3" id="progress-metrics"></div>
+      <div class="table-wrap"><div class="overflow-x"><table id="progress-table-el"></table></div></div>
+    </div>
+
+    <div class="page" id="page-report">
+      <div class="section-header">
+        <div><div class="section-title">Instructor Daily Report</div><div class="section-sub">Submit your end-of-day report</div></div>
+      </div>
+      <div class="card" style="padding:1.25rem;">
+        <div class="form-group">
+          <label class="form-label">Date of classes</label>
+          <input class="form-input" type="date" id="dr-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">What are 2 key lessons or points from this week's video lesson?</label>
+          <textarea class="form-input" id="dr-video-lessons" placeholder="1. &#10;2. "></textarea>
+        </div>
+
+        <div class="divider"></div>
+        <div class="form-group">
+          <label class="form-label">Did you make your social media post today?</label>
+          <select class="form-input" id="dr-social">
+            <option value="">Select...</option>
+            <option value="Yes - posted">Yes — posted</option>
+            <option value="No - did not post">No — did not post</option>
+            <option value="Someone else posted">Someone else posted</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Upload social media content (optional)</label>
+          <div class="upload-area" onclick="document.getElementById('dr-files').click()" id="dr-upload-area">
+            <i class="ti ti-upload" style="font-size:24px;display:block;margin-bottom:6px;color:var(--text2);"></i>
+            <div style="font-size:13px;font-weight:500;">Click to upload photos or videos</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:4px;">Images, videos, docs</div>
+          </div>
+          <input type="file" id="dr-files" multiple style="display:none;" onchange="handleReportFiles(this)">
+          <div id="dr-file-list" style="margin-top:8px;"></div>
+        </div>
+        <div class="divider"></div>
+        <div class="form-group">
+          <label class="form-label">Did you or someone follow up with all Attendance Violations and send SMS messages?</label>
+          <select class="form-input" id="dr-attendance">
+            <option value="">Select...</option>
+            <option value="Yes - all followed up">Yes — all followed up</option>
+            <option value="No - not completed">No — not completed</option>
+            <option value="No violations today">No violations today</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">How many families did you take a minute to connect with today? (give a number)</label>
+          <input class="form-input" type="number" id="dr-families" min="0" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Were there any students that were sick or injured before coming to class that we need to make note of?</label>
+          <textarea class="form-input" id="dr-sick" placeholder="List names and details, or write 'None'"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Do you think you or another staff member went above and beyond with something today?</label>
+          <textarea class="form-input" id="dr-above" placeholder="Describe what happened, or write 'No'"></textarea>
+        </div>
+        <div class="divider"></div>
+        <div class="form-group">
+          <label class="form-label">Did you make any of the following mistakes? (check all that apply)</label>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+            <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;"><input type="checkbox" id="m1" value="I forgot to do announcements"> I forgot to do announcements</label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;"><input type="checkbox" id="m2" value="I forgot to do mat chats"> I forgot to do mat chats</label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;"><input type="checkbox" id="m3" value="I started or ended class at the wrong time"> I started or ended class at the wrong time</label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;"><input type="checkbox" id="m4" value="I could have used student names more often"> I could have used student names more often</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Did anything go wrong today or was there an area you could improve on?</label>
+          <textarea class="form-input" id="dr-improve" placeholder="Be honest — this helps everyone grow"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Were there any injuries or medical emergencies in or out of classes? If so, did you fill out the incident report?</label>
+          <textarea class="form-input" id="dr-injuries" placeholder="Describe any incidents, or write 'None'"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Do you have any comments or concerns?</label>
+          <textarea class="form-input" id="dr-comments" placeholder="Anything else you want management to know"></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="submitDailyReport()" id="dr-submit-btn"><i class="ti ti-send"></i> Submit Report</button>
+        <div id="dr-status" style="margin-top:1rem;"></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-reportlog">
+      <div class="section-header">
+        <div><div class="section-title">Report Log</div><div class="section-sub">All submitted instructor reports</div></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="date" class="form-input" style="width:auto;font-size:13px;padding:7px 10px;" id="rl-date-filter" onchange="loadReportLog()">
+          <button class="btn btn-sm" onclick="document.getElementById('rl-date-filter').value='';loadReportLog()"><i class="ti ti-x"></i> Clear</button>
+        </div>
+      </div>
+      <div id="report-log-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal" style="display:none;" onclick="closeModalOutside(event)">
+  <div class="modal"><div class="modal-header"><div class="modal-title" id="modal-title"></div><button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button></div><div id="modal-body"></div></div>
+</div>
+
+<script>
+const SUPABASE_URL='https://brrjkeekzettqdbewlfe.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJycmprZWVremV0dHFkYmV3bGZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDEyMzksImV4cCI6MjA5NjA3NzIzOX0.V6lFgfcE7gx7530oTAmSPG9R3y2ek79eo3AkeB1W0So';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+var currentUser=null,currentProfile=null,allStaff=[],allCourses=[];
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function ini(n){return (n||'').split(' ').map(function(p){return p[0]||'';}).join('').substring(0,2).toUpperCase();}
+
+function switchAuthTab(t){
+  document.getElementById('signin-form').style.display=t==='signin'?'':'none';
+  document.getElementById('signup-form').style.display=t==='signup'?'':'none';
+  document.getElementById('tab-signin').classList.toggle('active',t==='signin');
+  document.getElementById('tab-signup').classList.toggle('active',t==='signup');
+  document.getElementById('auth-error').style.display='none';
+}
+function showAuthError(m){var e=document.getElementById('auth-error');e.textContent=m;e.style.display='block';}
+
+async function signIn(){
+  var email=document.getElementById('si-email').value.trim(),pass=document.getElementById('si-password').value;
+  if(!email||!pass){showAuthError('Please enter email and password.');return;}
+  var btn=document.getElementById('signin-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Signing in...';
+  var {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-login"></i> Sign in';
+  if(error){showAuthError(error.message);return;}
+  await loadApp(data.user);
+}
+
+async function signUp(){
+  var name=document.getElementById('su-name').value.trim(),role=document.getElementById('su-role').value.trim(),
+      email=document.getElementById('su-email').value.trim(),pass=document.getElementById('su-password').value;
+  if(!name||!email||!pass){showAuthError('Please fill in all fields.');return;}
+  var btn=document.getElementById('signup-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Creating...';
+  var {data,error}=await sb.auth.signUp({email,password:pass});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-user-plus"></i> Create account';
+  if(error){showAuthError(error.message);return;}
+  if(data.user){
+    await sb.from('profiles').insert({id:data.user.id,name,role:role||'Staff',is_admin:false});
+    await loadApp(data.user);
+  }
+}
+
+async function signOut(){
+  await sb.auth.signOut();currentUser=null;currentProfile=null;
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('main-app').style.display='none';
+}
+
+async function loadApp(user){
+  currentUser=user;
+  var {data:profile}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  currentProfile=profile;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('main-app').style.display='block';
+  document.getElementById('new-course-btn').style.display='none';
+  document.getElementById('tab-staff').style.display='none';
+  document.getElementById('tab-progress').style.display='none';
+  document.getElementById('tab-reportlog').style.display='none';
+  document.getElementById('user-name-display').textContent=(profile?profile.name:user.email)+(currentProfile&&currentProfile.is_admin?' (Admin)':'');
+  if(currentProfile&&currentProfile.is_admin){
+    document.getElementById('new-course-btn').style.display='';
+    document.getElementById('tab-staff').style.display='';
+    document.getElementById('tab-progress').style.display='';
+    document.getElementById('tab-reportlog').style.display='';
+    document.getElementById('courses-sub').textContent='Build and manage staff training content';
+  }
+  await loadCourses();
+  if(currentProfile&&currentProfile.is_admin)await loadStaff();
+}
+
+async function loadCourses(){
+  var {data}=await sb.from('courses').select('*, sections(*)').order('order_index').order('id');
+  allCourses=data||[];
+  await renderCourses();
+}
+
+async function renderCourses(){
+  var list=document.getElementById('course-list');
+  if(!allCourses.length){list.innerHTML='<div class="empty-state"><i class="ti ti-books"></i>No courses yet.</div>';return;}
+  // Check for redo submissions for staff
+  if(currentUser&&(!currentProfile||!currentProfile.is_admin)){
+    var allSids=[];
+    allCourses.forEach(function(c){(c.sections||[]).forEach(function(s){if(s.type==='submission')allSids.push({sid:s.id,cid:c.id,ctitle:c.title});});});
+    var banner=document.getElementById('redo-banner');
+    if(!banner){
+      banner=document.createElement('div');
+      banner.id='redo-banner';
+      list.parentNode.insertBefore(banner,list);
+    }
+    if(allSids.length){
+      var {data:redos}=await sb.from('video_submissions').select('section_id').eq('user_id',currentUser.id).eq('status','redo').in('section_id',allSids.map(function(x){return x.sid;}));
+      if(redos&&redos.length){
+        var redoSids=redos.map(function(r){return r.section_id;});
+        var redoCourses=[...new Set(allSids.filter(function(x){return redoSids.indexOf(x.sid)!==-1;}).map(function(x){return x.ctitle;}))];
+        banner.innerHTML='<div style="background:var(--danger-bg);border:0.5px solid var(--danger-border);border-radius:var(--radius);padding:12px 16px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;"><i class="ti ti-refresh" style="color:var(--danger-text);font-size:18px;flex-shrink:0;"></i><div><div style="font-size:14px;font-weight:500;color:var(--danger-text);">Redo requested on '+redos.length+' submission'+(redos.length>1?'s':'')+'</div><div style="font-size:12px;color:var(--danger-text);opacity:0.8;margin-top:2px;">'+redoCourses.map(function(t){return esc(t);}).join(', ')+'</div></div></div>';
+      } else {
+        banner.innerHTML='';
+      }
+    } else {
+      banner.innerHTML='';
+    }
+  }
+  var compMap={};
+  if(currentUser&&(!currentProfile||!currentProfile.is_admin)){
+    var sids=[];allCourses.forEach(function(c){(c.sections||[]).forEach(function(s){sids.push(s.id);});});
+    if(sids.length){var {data:comps}=await sb.from('completions').select('section_id').eq('user_id',currentUser.id).in('section_id',sids);(comps||[]).forEach(function(c){compMap[c.section_id]=true;});}
+  }
+  list.innerHTML=allCourses.map(function(c){
+    var secs=c.sections||[],total=secs.length,meta='',right='';
+    if(currentProfile&&currentProfile.is_admin){
+      meta='<span>'+total+' sections</span>';
+      right='<div style="display:flex;gap:6px;flex-shrink:0;" onclick="event.stopPropagation()">'+
+        '<button class="btn btn-sm" onclick="moveCourse('+c.id+',-1)" title="Move up"><i class="ti ti-arrow-up"></i></button>'+
+        '<button class="btn btn-sm" onclick="moveCourse('+c.id+',1)" title="Move down"><i class="ti ti-arrow-down"></i></button>'+
+        '<button class="btn btn-sm" onclick="openEditCourse('+c.id+')"><i class="ti ti-edit"></i></button>'+
+        '<button class="btn btn-sm btn-danger" onclick="deleteCourse('+c.id+')"><i class="ti ti-trash"></i></button></div>';
+    } else {
+      var done=secs.filter(function(s){return compMap[s.id];}).length,pct=total?Math.round(done/total*100):0;
+      meta='<span>'+total+' sections</span><span>'+pct+'% complete</span>';
+      right='<span class="badge '+(pct===100?'badge-success':'badge-warning')+'">'+(pct===100?'Done':'In progress')+'</span>';
+    }
+    var prog=(!currentProfile||!currentProfile.is_admin)?function(){var done=secs.filter(function(s){return compMap[s.id];}).length,pct=total?Math.round(done/total*100):0;return '<div class="progress-bar-wrap"><div class="progress-bar" style="width:'+pct+'%"></div></div>';}():'';
+    return '<div class="card clickable" onclick="openCourse('+c.id+')"><div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;"><div style="flex:1;min-width:0;"><div class="card-title">'+esc(c.title)+'</div><div class="card-meta">'+meta+'</div></div>'+right+'</div>'+prog+'</div>';
+  }).join('');
+}
+
+async function openCourse(id){
+  var course=allCourses.find(function(c){return c.id===id;});if(!course)return;
+  var secs=course.sections||[];
+  document.getElementById('modal-title').textContent=course.title;
+  var compMap={},qrMap={},subMap={};
+  if(currentUser&&secs.length){
+    var sids=secs.map(function(s){return s.id;});
+    var {data:comps}=await sb.from('completions').select('section_id').eq('user_id',currentUser.id).in('section_id',sids);
+    (comps||[]).forEach(function(c){compMap[c.section_id]=true;});
+    var {data:qrs}=await sb.from('quiz_results').select('*').eq('user_id',currentUser.id).in('section_id',sids);
+    (qrs||[]).forEach(function(r){qrMap[r.section_id]=r;});
+    var {data:subs}=await sb.from('video_submissions').select('*').eq('user_id',currentUser.id).in('section_id',sids);
+    (subs||[]).forEach(function(r){subMap[r.section_id]=r;});
+  }
+  var isAdmin=currentProfile&&currentProfile.is_admin;
+  var body='<p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">'+esc(course.description||'')+'</p>';
+  secs.forEach(function(s,si){
+    var done=compMap[s.id],qr=qrMap[s.id];
+    var tc=s.type==='video'?'type-video':s.type==='quiz'?'type-quiz':s.type==='file'?'type-file':s.type==='submission'?'type-submission':'type-text';
+    var ti=s.type==='video'?'brand-youtube':s.type==='quiz'?'help-circle':s.type==='file'?'paperclip':s.type==='submission'?'video':'file-text';
+    var typelabel=s.type==='video'?'Video':s.type==='quiz'?'Quiz':s.type==='file'?'File':s.type==='submission'?'Video Submission':'Text';
+    var sub=subMap[s.id];
+    var statusBadge='';
+    if(!isAdmin){
+      if(s.type==='quiz'&&qr)statusBadge='<span class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-left:8px;">'+(qr.passed?'Passed':'Failed')+'</span>';
+      else if(s.type==='submission'&&sub){
+        if(sub.status==='approved')statusBadge='<span class="badge badge-success" style="margin-left:8px;"><i class="ti ti-circle-check"></i> Approved</span>';
+        else if(sub.status==='redo')statusBadge='<span class="badge badge-danger" style="margin-left:8px;"><i class="ti ti-refresh"></i> Redo requested</span>';
+        else statusBadge='<span class="badge badge-warning" style="margin-left:8px;"><i class="ti ti-clock"></i> Pending review</span>';
+      }
+      else if(s.type!=='quiz'&&s.type!=='submission'&&done)statusBadge='<span class="badge badge-success" style="margin-left:8px;"><i class="ti ti-check"></i> Done</span>';
+    }
+    var inner='';
+    if(isAdmin){
+      if(s.type==='quiz')inner+='<button class="btn btn-sm" onclick="openQuizEditor('+s.id+')"><i class="ti ti-edit"></i> Edit questions</button>';
+      if(s.type==='file')inner+='<button class="btn btn-sm" onclick="openFileUploader('+s.id+')"><i class="ti ti-upload"></i> Upload file</button>'+(s.url?'<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm" style="margin-left:6px;"><i class="ti ti-external-link"></i> View file</a>':'');
+      if(s.type==='submission')inner+=renderAdminSubmissions(s.id,id);
+      if(s.type==='video')inner+='<div style="font-size:13px;color:var(--text2);">URL: '+esc(s.url||'Not set')+'</div>';
+      if(s.type==='text')inner+='<div style="font-size:13px;color:var(--text2);line-height:1.7;">'+esc(s.content||'No content').split('\n').join('<br>')+'</div>';
+    } else {
+      if(s.type==='video'&&s.url)inner+='<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i> Watch on YouTube</a>';
+      if(s.type==='text'&&s.content)inner+='<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px;">'+esc(s.content).split('\n').join('<br>')+'</div>';
+      if(s.type==='file'&&s.url)inner+='<a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-download"></i> View / Download</a>';
+      if(s.type==='submission')inner+=renderStaffSubmission(s,sub);
+      if(s.type==='quiz'){
+        if(qr)inner+='<div class="badge '+(qr.passed?'badge-success':'badge-danger')+'" style="margin-bottom:10px;display:inline-flex;">'+(qr.passed?'Passed - '+qr.score+'%':'Failed - '+qr.score+'% (need 70%)')+'</div><br><button class="btn btn-sm" style="margin-top:8px;" onclick="openQuiz('+s.id+','+id+')">Retake quiz</button>';
+        else inner+='<button class="btn btn-sm" onclick="openQuiz('+s.id+','+id+')"><i class="ti ti-help-circle"></i> Take quiz</button>';
+      }
+      if(s.type!=='quiz'&&s.type!=='submission')inner+='<div style="margin-top:12px;"><button class="btn btn-sm '+(done?'btn-success':'')+'" onclick="toggleComplete('+s.id+','+!!done+','+id+')">'+(done?'<i class="ti ti-check"></i> Marked done':'Mark as done')+'</button></div>';
+    }
+    body+=[
+      '<div style="border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;">',
+      '<div class="sec-hdr" data-target="csec'+si+'" data-chev="cchev'+si+'" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:var(--bg2);">',
+      '<div class="section-type-icon '+tc+'" style="flex-shrink:0;width:26px;height:26px;font-size:13px;"><i class="ti ti-'+ti+'"></i></div>',
+      '<div style="flex:1;min-width:0;"><div style="font-weight:500;font-size:14px;">'+esc(s.title)+'</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">'+typelabel+'</div></div>',
+      statusBadge,
+      '<i id="cchev'+si+'" class="ti ti-chevron-down" style="font-size:14px;color:var(--text2);transition:transform 0.2s;flex-shrink:0;margin-left:6px;"></i>',
+      '</div>',
+      '<div id="csec'+si+'" style="display:none;padding:14px;border-top:0.5px solid var(--border);background:var(--bg);">'+inner+'</div>',
+      '</div>'
+    ].join('');
+  });
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('modal').style.display='flex';
+  // attach toggle handlers after DOM is set
+  document.querySelectorAll('.sec-hdr').forEach(function(hdr){
+    hdr.addEventListener('click',function(){
+      var t=document.getElementById(hdr.dataset.target);
+      var c=document.getElementById(hdr.dataset.chev);
+      var open=t.style.display==='none';
+      t.style.display=open?'block':'none';
+      if(c)c.style.transform=open?'rotate(180deg)':'';
+    });
+  });
+}
+
+async function toggleComplete(sid,isDone,courseId){
+  if(isDone)await sb.from('completions').delete().eq('user_id',currentUser.id).eq('section_id',sid);
+  else await sb.from('completions').insert({user_id:currentUser.id,section_id:sid});
+  await openCourse(courseId);await renderCourses();
+}
+
+async function openQuiz(sectionId,courseId){
+  var {data:questions}=await sb.from('quiz_questions').select('*').eq('section_id',sectionId);
+  if(!questions||!questions.length){alert('No questions set up for this quiz yet.');return;}
+  var answers={},submitted=false;
+  function renderQ(){
+    var b='';
+    questions.forEach(function(q,qi){
+      var opts=q.options||[];
+      b+='<div style="margin-bottom:1.25rem;"><div style="font-size:14px;font-weight:500;margin-bottom:8px;">'+(qi+1)+'. '+esc(q.question)+'</div>';
+      opts.forEach(function(opt,oi){
+        var cls='quiz-option';
+        if(submitted){if(oi===q.correct_index)cls+=' correct';else if(answers[q.id]===oi)cls+=' wrong';}
+        else if(answers[q.id]===oi)cls+=' selected';
+        b+='<div class="'+cls+'" onclick="'+(submitted?'':'qa('+q.id+','+oi+')')+'"><div style="width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:600;">'+(submitted&&oi===q.correct_index?'✓':String.fromCharCode(65+oi))+'</div><span style="font-size:13px;">'+esc(opt)+'</span></div>';
+      });
+      b+='</div>';
+    });
+    if(!submitted)b+='<button class="btn btn-primary" style="width:100%;" onclick="sq()"><i class="ti ti-check"></i> Submit answers</button>';
+    document.getElementById('modal-body').innerHTML='<div id="qc">'+b+'</div>';
+  }
+  window.qa=function(qid,oi){if(submitted)return;answers[qid]=oi;renderQ();};
+  window.sq=async function(){
+    if(Object.keys(answers).length<questions.length){alert('Please answer all questions.');return;}
+    submitted=true;
+    var correct=questions.filter(function(q){return answers[q.id]===q.correct_index;}).length;
+    var score=Math.round(correct/questions.length*100),passed=score>=70;
+    await sb.from('quiz_results').upsert({user_id:currentUser.id,section_id:sectionId,score,passed,completed_at:new Date().toISOString()},{onConflict:'user_id,section_id'});
+    if(passed)await sb.from('completions').upsert({user_id:currentUser.id,section_id:sectionId},{onConflict:'user_id,section_id'});
+    renderQ();
+    document.getElementById('qc').insertAdjacentHTML('beforeend','<div class="alert '+(passed?'alert-success':'alert-danger')+'" style="margin-top:1rem;">'+(passed?'Passed! Score: '+score+'%':'Score: '+score+'% — need 70% to pass. You can retake it.')+'</div>');
+    await renderCourses();
+  };
+  document.getElementById('modal-title').textContent='Quiz';
+  renderQ();
+  document.getElementById('modal').style.display='flex';
+}
+
+var quizEditorQs=[];
+async function openQuizEditor(sectionId){
+  var {data:existing}=await sb.from('quiz_questions').select('*').eq('section_id',sectionId);
+  quizEditorQs=(existing||[]).map(function(q){return{id:q.id,question:q.question,options:q.options||['',''],correct_index:q.correct_index||0};});
+  var qs=quizEditorQs;
+  window.renderQE=function(){
+    var qs=quizEditorQs;
+    var b=qs.map(function(q,qi){
+      return '<div style="background:var(--bg2);border-radius:var(--radius);padding:12px;margin-bottom:10px;">'+
+        '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;font-weight:500;">Q'+(qi+1)+'</span><button class="btn btn-sm btn-danger" onclick="dq('+qi+')"><i class="ti ti-trash"></i></button></div>'+
+        '<input class="form-input" style="margin-bottom:8px;" placeholder="Question" value="'+esc(q.question)+'" oninput="quizEditorQs['+qi+'].question=this.value">'+
+        q.options.map(function(opt,oi){return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><input type="radio" name="c'+qi+'" '+(q.correct_index===oi?'checked':'')+' onchange="quizEditorQs['+qi+'].correct_index='+oi+'" style="width:16px;height:16px;cursor:pointer;"><input class="form-input" style="flex:1;" placeholder="Option '+(oi+1)+'" value="'+esc(opt)+'" oninput="quizEditorQs['+qi+'].options['+oi+']=this.value"></div>';}).join('')+
+        '<button class="btn btn-sm" onclick="ao('+qi+')" style="margin-top:4px;"><i class="ti ti-plus"></i> Add option</button></div>';
+    }).join('');
+    b+='<button class="btn btn-sm" onclick="aq()" style="margin-bottom:1rem;"><i class="ti ti-plus"></i> Add question</button>'+
+       '<br><button class="btn btn-primary" style="width:100%;margin-top:0.5rem;" onclick="saveQE('+sectionId+')"><i class="ti ti-check"></i> Save quiz</button>';
+    document.getElementById('modal-body').innerHTML=b;
+  }
+  window.aq=function(){quizEditorQs.push({question:'',options:['',''],correct_index:0});renderQE();};
+  window.dq=function(i){quizEditorQs.splice(i,1);renderQE();};
+  window.ao=function(qi){quizEditorQs[qi].options.push('');renderQE();};
+  window.saveQE=async function(sid){
+    var {error:delErr}=await sb.from('quiz_questions').delete().eq('section_id',sid);
+    if(delErr){alert('Delete error: '+delErr.message);return;}
+    console.log('quizEditorQs at save:', JSON.stringify(quizEditorQs));
+    var valid=quizEditorQs.filter(function(q){return q.question.trim()&&q.options.length>=2;});
+    console.log('valid questions:', valid.length);
+    if(!valid.length){alert('No valid questions to save - make sure each question has text and at least 2 options.');return;}
+    var toInsert=valid.map(function(q){return{section_id:sid,question:q.question,options:q.options,correct_index:q.correct_index||0};});
+    console.log('Inserting quiz questions:', JSON.stringify(toInsert));
+    var {data,error}=await sb.from('quiz_questions').insert(toInsert).select();
+    console.log('Insert result:', data, error);
+    if(error){alert('Save error: '+error.message);return;}
+    closeModal();alert('Quiz saved! '+toInsert.length+' question(s) saved.');
+  };
+  document.getElementById('modal-title').textContent='Edit quiz questions';
+  renderQE();
+  document.getElementById('modal').style.display='flex';
+}
+
+async function openFileUploader(sectionId){
+  document.getElementById('modal-title').textContent='Upload file';
+  document.getElementById('modal-body').innerHTML=
+    '<p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">Upload a PDF, image, Word doc, or video. Staff will see a download link.</p>'+
+    '<div class="upload-area" onclick="document.getElementById(\'fi\').click()"><i class="ti ti-upload" style="font-size:28px;display:block;margin-bottom:8px;color:var(--text2);"></i><div style="font-size:14px;font-weight:500;">Click to choose a file</div><div style="font-size:12px;color:var(--text2);margin-top:4px;">PDF, images, Word docs, videos</div></div>'+
+    '<input type="file" id="fi" style="display:none;" onchange="doUpload('+sectionId+',this)">'+
+    '<div id="up-status" style="margin-top:1rem;"></div>';
+  document.getElementById('modal').style.display='flex';
+}
+window.doUpload=async function(sid,input){
+  var file=input.files[0];if(!file)return;
+  document.getElementById('up-status').innerHTML='<div style="display:flex;align-items:center;gap:8px;font-size:13px;"><span class="spinner"></span> Uploading '+esc(file.name)+'...</div>';
+  var path='s'+sid+'-'+Date.now()+'-'+file.name;
+  var {data,error}=await sb.storage.from('uploads').upload(path,file);
+  if(error){document.getElementById('up-status').innerHTML='<div class="alert alert-danger">Upload failed: '+esc(error.message)+'</div>';return;}
+  var {data:ud}=sb.storage.from('uploads').getPublicUrl(path);
+  await sb.from('sections').update({url:ud.publicUrl}).eq('id',sid);
+  document.getElementById('up-status').innerHTML='<div class="alert alert-success"><i class="ti ti-circle-check"></i> Uploaded! Staff can now access this file.</div>';
+  await loadCourses();
+};
+
+var editingCourse=null,editingSections=[];
+function openNewCourse(){editingCourse=null;editingSections=[];document.getElementById('modal-title').textContent='New Course';renderCourseForm(null);document.getElementById('modal').style.display='flex';}
+async function openEditCourse(id){
+  var c=allCourses.find(function(c){return c.id===id;});if(!c)return;
+  editingCourse=id;editingSections=(c.sections||[]).map(function(s){return Object.assign({},s);});
+  document.getElementById('modal-title').textContent='Edit Course';renderCourseForm(c);document.getElementById('modal').style.display='flex';
+}
+function renderCourseForm(course){
+  var sh=editingSections.length?editingSections.map(function(s,i){
+    var tc=s.type==='video'?'type-video':s.type==='quiz'?'type-quiz':s.type==='file'?'type-file':'type-text';
+    var ti=s.type==='video'?'brand-youtube':s.type==='quiz'?'help-circle':s.type==='file'?'paperclip':'file-text';
+    var ex='';
+    if(s.type==='video')ex='<input class="form-input" style="margin-top:6px;" placeholder="YouTube URL" value="'+esc(s.url||'')+'" oninput="editingSections['+i+'].url=this.value">';
+    if(s.type==='text')ex='<textarea class="form-input" style="margin-top:6px;" placeholder="Text content..." oninput="editingSections['+i+'].content=this.value">'+esc(s.content||'')+'</textarea>';
+    if(s.type==='quiz')ex='<div style="font-size:12px;color:var(--text2);margin-top:6px;">Add questions after saving.</div>';
+    if(s.type==='file')ex='<div style="font-size:12px;color:var(--text2);margin-top:6px;">Upload file after saving.</div>';
+    if(s.type==='submission')ex='<input class="form-input" style="margin-top:6px;" placeholder="Demo YouTube URL (the technique they should copy)" value="'+esc(s.url||'')+'" oninput="editingSections['+i+'].url=this.value"><textarea class="form-input" style="margin-top:6px;" placeholder="Instructions for staff (e.g. Record yourself performing this technique and paste your YouTube link)" oninput="editingSections['+i+'].content=this.value">'+esc(s.content||'')+'</textarea>';
+    return '<div class="section-item" style="flex-direction:column;gap:6px;"><div style="display:flex;align-items:center;gap:8px;width:100%;"><div class="section-type-icon '+tc+'"><i class="ti ti-'+ti+'"></i></div><input class="form-input" style="flex:1;" placeholder="Section title" value="'+esc(s.title||'')+'" oninput="editingSections['+i+'].title=this.value"><button class="btn btn-sm btn-danger" onclick="rmSec('+i+')"><i class="ti ti-trash"></i></button></div>'+ex+'</div>';
+  }).join(''):'<div style="font-size:13px;color:var(--text2);padding:8px 0;">No sections yet.</div>';
+  document.getElementById('modal-body').innerHTML=
+    '<div class="form-group"><label class="form-label">Course title</label><input class="form-input" id="cf-title" value="'+esc(course?course.title:'')+'"></div>'+
+    '<div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="cf-desc">'+esc(course?course.description:'')+'</textarea></div>'+
+    '<div class="divider"></div><div style="font-size:13px;font-weight:500;margin-bottom:0.75rem;">Sections</div>'+
+    '<div id="cf-secs">'+sh+'</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;">'+
+      '<button class="btn btn-sm" onclick="addSec(\'video\')"><i class="ti ti-brand-youtube"></i> Video</button>'+
+      '<button class="btn btn-sm" onclick="addSec(\'text\')"><i class="ti ti-file-text"></i> Text</button>'+
+      '<button class="btn btn-sm" onclick="addSec(\'quiz\')"><i class="ti ti-help-circle"></i> Quiz</button>'+
+      '<button class="btn btn-sm" onclick="addSec(\'file\')"><i class="ti ti-paperclip"></i> File</button>'+
+      '<button class="btn btn-sm" onclick="addSec(\'submission\')"><i class="ti ti-video"></i> Video Submission</button>'+
+    '</div>'+
+    '<button class="btn btn-primary" style="width:100%;" onclick="saveCourse()" id="sc-btn"><i class="ti ti-check"></i> Save Course</button>';
+}
+function addSec(t){editingSections.push({id:null,type:t,title:'',url:'',content:''});renderCourseForm(editingCourse?allCourses.find(function(c){return c.id===editingCourse;}):null);}
+function rmSec(i){editingSections.splice(i,1);renderCourseForm(editingCourse?allCourses.find(function(c){return c.id===editingCourse;}):null);}
+async function saveCourse(){
+  var title=document.getElementById('cf-title').value.trim(),desc=document.getElementById('cf-desc').value.trim();
+  if(!title){alert('Please enter a course title.');return;}
+  var btn=document.getElementById('sc-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Saving...';
+  var cid=editingCourse;
+  if(editingCourse){
+    await sb.from('courses').update({title,description:desc}).eq('id',editingCourse);
+    // delete sections that were removed
+    var keepIds=editingSections.filter(function(s){return s.id;}).map(function(s){return s.id;});
+    var existingIds=(allCourses.find(function(c){return c.id===editingCourse;})||{sections:[]}).sections.map(function(s){return s.id;});
+    var toDelete=existingIds.filter(function(id){return keepIds.indexOf(id)===-1;});
+    if(toDelete.length)await sb.from('sections').delete().in('id',toDelete);
+    // update existing sections
+    var existing=editingSections.filter(function(s){return s.id;});
+    for(var i=0;i<existing.length;i++){
+      var s=existing[i];
+      await sb.from('sections').update({title:s.title||'Untitled',content:s.content||null,url:s.url||null,order_index:editingSections.indexOf(s)}).eq('id',s.id);
+    }
+    // insert new sections
+    var newSecs=editingSections.filter(function(s){return !s.id;});
+    if(newSecs.length)await sb.from('sections').insert(newSecs.map(function(s,i){return{course_id:cid,type:s.type,title:s.title||'Untitled',content:s.content||null,url:s.url||null,order_index:editingSections.indexOf(s)};}));
+  } else {
+    var {data:nc}=await sb.from('courses').insert({title,description:desc}).select().single();cid=nc.id;
+    if(editingSections.length)await sb.from('sections').insert(editingSections.map(function(s,i){return{course_id:cid,type:s.type,title:s.title||'Untitled',content:s.content||null,url:s.url||null,order_index:i};}));
+  }
+  closeModal();await loadCourses();
+}
+async function moveCourse(id, direction){
+  var idx=allCourses.findIndex(function(c){return c.id===id;});
+  var newIdx=idx+direction;
+  if(newIdx<0||newIdx>=allCourses.length)return;
+  // swap in local array
+  var tmp=allCourses[idx];
+  allCourses[idx]=allCourses[newIdx];
+  allCourses[newIdx]=tmp;
+  // save new order_index values to db
+  var updates=allCourses.map(function(c,i){return sb.from('courses').update({order_index:i}).eq('id',c.id);});
+  await Promise.all(updates);
+  await renderCourses();
+}
+
+async function deleteCourse(id){
+  if(!confirm('Delete this course? This cannot be undone.'))return;
+  await sb.from('courses').delete().eq('id',id);await loadCourses();
+}
+
+async function loadStaff(){
+  var {data}=await sb.from('profiles').select('*').order('name');
+  allStaff=data||[];renderStaff();
+}
+function renderStaff(){
+  document.getElementById('staff-sub').textContent=allStaff.length+' staff members';
+  var list=document.getElementById('staff-list');
+  if(!allStaff.length){list.innerHTML='<div class="empty-state" style="padding:2rem;"><i class="ti ti-users"></i>No staff yet.</div>';return;}
+  list.innerHTML=allStaff.map(function(s){
+    return '<div class="staff-row"><div class="avatar">'+esc(ini(s.name))+'</div>'+
+      '<div style="flex:1;"><div style="font-size:14px;font-weight:500;">'+esc(s.name)+'</div><div style="font-size:12px;color:var(--text2);">'+esc(s.role||'Staff')+'</div></div>'+
+      (s.is_admin?'<span class="badge badge-info">Admin</span>':'<button class="btn btn-sm" onclick="makeAdmin(\''+s.id+'\')">Make admin</button>')+
+    '</div>';
+  }).join('');
+}
+async function makeAdmin(uid){if(!confirm('Give admin access to this staff member?'))return;await sb.from('profiles').update({is_admin:true}).eq('id',uid);await loadStaff();}
+function openInviteStaff(){
+  document.getElementById('modal-title').textContent='Invite staff';
+  document.getElementById('modal-body').innerHTML=
+    '<p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">Share this link with your staff. They click it, create an account, and they\'re in.</p>'+
+    '<div style="background:var(--bg2);border-radius:var(--radius);padding:12px;font-size:13px;word-break:break-all;">'+esc(window.location.href)+'</div>'+
+    '<button class="btn" style="width:100%;margin-top:1rem;" onclick="navigator.clipboard.writeText(window.location.href).then(function(){alert(\'Copied!\');})"><i class="ti ti-copy"></i> Copy link</button>';
+  document.getElementById('modal').style.display='flex';
+}
+
+async function renderProgress(){
+  var sel=document.getElementById('progress-course-select');if(!sel)return;
+  var prevVal=sel.value;
+  sel.innerHTML=allCourses.map(function(c){return '<option value="'+c.id+'">'+esc(c.title)+'</option>';}).join('');
+  if(prevVal)sel.value=prevVal;
+  var cid=parseInt(sel.value),course=allCourses.find(function(c){return c.id===cid;});
+  if(!course||!allStaff.length){document.getElementById('progress-metrics').innerHTML='';document.getElementById('progress-table-el').innerHTML='<tr><td style="padding:1rem;color:var(--text2);font-size:13px;">No data.</td></tr>';return;}
+  var secs=course.sections||[],sids=secs.map(function(s){return s.id;}),uids=allStaff.map(function(s){return s.id;});
+  var compMap={},qrMap={};
+  if(sids.length&&uids.length){
+    var {data:comps}=await sb.from('completions').select('user_id,section_id').in('section_id',sids).in('user_id',uids);
+    (comps||[]).forEach(function(c){compMap[c.user_id+'_'+c.section_id]=true;});
+    var {data:qrs}=await sb.from('quiz_results').select('user_id,section_id,passed,score').in('section_id',sids).in('user_id',uids);
+    (qrs||[]).forEach(function(r){qrMap[r.user_id+'_'+r.section_id]=r;});
+  }
+  var tp=secs.length*allStaff.length,td=0;
+  allStaff.forEach(function(st){secs.forEach(function(s){if(compMap[st.id+'_'+s.id])td++;});});
+  var fd=allStaff.filter(function(st){return secs.every(function(s){return compMap[st.id+'_'+s.id];});}).length;
+  document.getElementById('progress-metrics').innerHTML=
+    '<div class="metric-card"><div class="metric-label">Overall completion</div><div class="metric-value">'+(tp?Math.round(td/tp*100):0)+'%</div></div>'+
+    '<div class="metric-card"><div class="metric-label">Staff fully done</div><div class="metric-value">'+fd+' / '+allStaff.length+'</div></div>'+
+    '<div class="metric-card"><div class="metric-label">Total completions</div><div class="metric-value">'+td+' / '+tp+'</div></div>';
+  var thead='<thead><tr><th>Staff</th>'+secs.map(function(s){return '<th style="text-align:center;max-width:90px;font-size:11px;">'+esc(s.title)+'</th>';}).join('')+'<th style="text-align:center;">Done</th></tr></thead>';
+  var tbody='<tbody>'+allStaff.map(function(st){
+    var cols=secs.map(function(s){
+      var done=compMap[st.id+'_'+s.id],qr=qrMap[st.id+'_'+s.id];
+      var cell=s.type==='quiz'?(qr?(qr.passed?'<span class="badge badge-success" style="font-size:10px;">'+qr.score+'%</span>':'<span class="badge badge-danger" style="font-size:10px;">'+qr.score+'%</span>'):'<span style="color:var(--text3);">—</span>'):(done?'<i class="ti ti-circle-check" style="color:var(--success-text);font-size:16px;"></i>':'<i class="ti ti-circle" style="color:var(--border2);font-size:16px;"></i>');
+      return '<td style="text-align:center;">'+cell+'</td>';
+    }).join('');
+    var cnt=secs.filter(function(s){return compMap[st.id+'_'+s.id];}).length;
+    return '<tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="width:26px;height:26px;font-size:10px;">'+esc(ini(st.name))+'</div>'+esc(st.name)+'</div></td>'+cols+'<td style="text-align:center;"><span class="badge '+(cnt===secs.length?'badge-success':'badge-neutral')+'">'+cnt+'/'+secs.length+'</span></td></tr>';
+  }).join('')+'</tbody>';
+  document.getElementById('progress-table-el').innerHTML=thead+tbody;
+}
+
+function renderStaffSubmission(s,sub){
+  var html='';
+  if(s.url)html+='<div style="margin-bottom:12px;"><div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Watch the demo technique:</div><a href="'+esc(s.url)+'" target="_blank" class="btn btn-sm"><i class="ti ti-brand-youtube"></i> Watch demo video</a></div>';
+  if(s.content)html+='<div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px;">'+esc(s.content).split('\n').join('<br>')+'</div>';
+  if(sub){
+    var statusHtml='';
+    if(sub.status==='approved')statusHtml='<div class="alert alert-success" style="margin-bottom:12px;"><i class="ti ti-circle-check"></i> Your submission was approved!</div>';
+    else if(sub.status==='redo')statusHtml='<div class="alert alert-danger" style="margin-bottom:12px;"><i class="ti ti-refresh"></i> Redo requested'+(sub.admin_note?': '+esc(sub.admin_note):'')+'</div>';
+    else statusHtml='<div class="alert" style="background:var(--warning-bg);color:var(--warning-text);margin-bottom:12px;"><i class="ti ti-clock"></i> Submitted — pending admin review</div>';
+    html+=statusHtml;
+    html+='<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Your submitted video:</div>';
+    html+='<a href="'+esc(sub.youtube_url)+'" target="_blank" class="btn btn-sm" style="margin-bottom:12px;"><i class="ti ti-brand-youtube"></i> View your submission</a>';
+    html+='<div style="margin-top:4px;"><div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Resubmit a new video:</div>';
+    html+='<div style="display:flex;gap:8px;"><input class="form-input" id="sub-url-'+s.id+'" placeholder="New YouTube URL" style="flex:1;"><button class="btn btn-sm btn-primary" onclick="submitVideo('+s.id+')">Resubmit</button></div></div>';
+  } else {
+    html+='<div style="font-size:13px;font-weight:500;margin-bottom:8px;">Submit your video:</div>';
+    html+='<div style="display:flex;gap:8px;"><input class="form-input" id="sub-url-'+s.id+'" placeholder="Paste your YouTube URL here"><button class="btn btn-sm btn-primary" onclick="submitVideo('+s.id+')"><i class="ti ti-send"></i> Submit</button></div>';
+  }
+  return html;
+}
+
+function renderAdminSubmissions(sectionId, courseId){
+  setTimeout(function(){loadAdminSubs(sectionId,courseId);},50);
+  return '<div id="admin-subs-'+sectionId+'"><div style="font-size:13px;color:var(--text2);">Loading submissions...</div></div>';
+}
+
+window.loadAdminSubs=async function(sectionId, courseId){
+  var el=document.getElementById('admin-subs-'+sectionId);
+  if(!el)return;
+  var {data:subs}=await sb.from('video_submissions').select('*, profiles(name)').eq('section_id',sectionId);
+  if(!subs||!subs.length){el.innerHTML='<div style="font-size:13px;color:var(--text2);">No submissions yet.</div>';return;}
+  el.innerHTML=subs.map(function(sub){
+    var statusBadge=sub.status==='approved'?'<span class="badge badge-success"><i class="ti ti-circle-check"></i> Approved</span>':
+      sub.status==='redo'?'<span class="badge badge-danger"><i class="ti ti-refresh"></i> Redo requested</span>':
+      '<span class="badge badge-warning"><i class="ti ti-clock"></i> Pending</span>';
+    return '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'+
+        '<div class="avatar" style="width:26px;height:26px;font-size:10px;">'+esc(ini(sub.profiles?sub.profiles.name:'?'))+'</div>'+
+        '<span style="font-size:13px;font-weight:500;flex:1;">'+esc(sub.profiles?sub.profiles.name:'Unknown')+'</span>'+
+        statusBadge+
+      '</div>'+
+      '<a href="'+esc(sub.youtube_url)+'" target="_blank" class="btn btn-sm" style="margin-bottom:8px;"><i class="ti ti-brand-youtube"></i> Watch submission</a>'+
+      (sub.status!=='approved'?'<button class="btn btn-sm btn-success" data-sid="'+sub.id+'" data-secid="'+sectionId+'" data-cid="'+courseId+'" data-action="approve" style="margin-left:6px;"><i class="ti ti-check"></i> Approve</button>':'')+
+      (sub.status!=='redo'?'<button class="btn btn-sm btn-danger" data-sid="'+sub.id+'" data-secid="'+sectionId+'" data-cid="'+courseId+'" data-action="redo" style="margin-left:6px;"><i class="ti ti-refresh"></i> Request redo</button>':'')+
+    '</div>';
+  }).join('');
+  el.querySelectorAll('[data-action]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var sid=parseInt(btn.dataset.sid),secid=parseInt(btn.dataset.secid),cid=parseInt(btn.dataset.cid);
+      if(btn.dataset.action==='approve')reviewSub(sid,'approved',null,secid,cid);
+      else promptRedo(sid,secid,cid);
+    });
+  });
+};
+
+window.submitVideo=async function(sectionId){
+  var url=document.getElementById('sub-url-'+sectionId);
+  if(!url||!url.value.trim()){alert('Please paste your YouTube URL.');return;}
+  var yturl=url.value.trim();
+  await sb.from('video_submissions').upsert({user_id:currentUser.id,section_id:sectionId,youtube_url:yturl,status:'pending',submitted_at:new Date().toISOString()},{onConflict:'user_id,section_id'});
+  var courseId=null;
+  allCourses.forEach(function(c){(c.sections||[]).forEach(function(s){if(s.id===sectionId)courseId=c.id;});});
+  if(courseId)await openCourse(courseId);
+  await renderCourses();
+};
+
+window.reviewSub=async function(subId,status,note,sectionId,courseId){
+  await sb.from('video_submissions').update({status:status,admin_note:note,reviewed_at:new Date().toISOString()}).eq('id',subId);
+  if(status==='approved'){
+    var {data:sub}=await sb.from('video_submissions').select('user_id').eq('id',subId).single();
+    if(sub)await sb.from('completions').upsert({user_id:sub.user_id,section_id:sectionId},{onConflict:'user_id,section_id'});
+  }
+  await loadAdminSubs(sectionId,courseId);
+};
+
+window.promptRedo=function(subId,sectionId,courseId){
+  var note=prompt('Optional: add a note for the instructor (what to improve):');
+  if(note===null)return;
+  reviewSub(subId,'redo',note||null,sectionId,courseId);
+};
+
+function closeModal(){document.getElementById('modal').style.display='none';}
+function closeModalOutside(e){if(e.target.id==='modal')closeModal();}
+function showPage(p){
+  document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});
+  document.querySelectorAll('.nav-tab').forEach(function(x){x.classList.remove('active');});
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('tab-'+p).classList.add('active');
+  if(p==='progress')renderProgress();
+  if(p==='staff')loadStaff();
+  if(p==='report')initReportForm();
+  if(p==='reportlog')loadReportLog();
+}
+
+var drUploadedFiles=[];
+function handleReportFiles(input){
+  drUploadedFiles=Array.from(input.files);
+  var list=document.getElementById('dr-file-list');
+  list.innerHTML=drUploadedFiles.map(function(f){
+    return '<div class="file-item"><i class="ti ti-file" style="color:var(--text2);"></i><span style="font-size:13px;flex:1;">'+esc(f.name)+'</span></div>';
+  }).join('');
+}
+
+function initReportForm(){
+  var today=new Date().toISOString().split('T')[0];
+  var el=document.getElementById('dr-date');
+  if(!el.value)el.value=today;
+}
+
+async function submitDailyReport(){
+  var date=document.getElementById('dr-date').value;
+  if(!date){alert('Please select a date.');return;}
+  var btn=document.getElementById('dr-submit-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Submitting...';
+  document.getElementById('dr-status').innerHTML='';
+
+  var mistakes=[];
+  ['m1','m2','m3','m4'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el&&el.checked)mistakes.push(el.value);
+  });
+
+  var fileUrls=[];
+  for(var i=0;i<drUploadedFiles.length;i++){
+    var f=drUploadedFiles[i];
+    var path='report-'+currentUser.id+'-'+Date.now()+'-'+f.name;
+    var {data,error}=await sb.storage.from('uploads').upload(path,f);
+    if(!error){var {data:ud}=sb.storage.from('uploads').getPublicUrl(path);fileUrls.push({name:f.name,url:ud.publicUrl});}
+  }
+
+  var report={
+    user_id:currentUser.id,
+    report_date:date,
+    video_lessons:document.getElementById('dr-video-lessons')?document.getElementById('dr-video-lessons').value:'',
+    social_media_post:document.getElementById('dr-social').value,
+    social_media_files:fileUrls,
+    attendance_followup:document.getElementById('dr-attendance').value,
+    families_connected:parseInt(document.getElementById('dr-families').value)||0,
+    sick_injured:document.getElementById('dr-sick').value,
+    above_beyond:document.getElementById('dr-above').value,
+    mistakes:mistakes,
+    improvements:document.getElementById('dr-improve').value,
+    injuries:document.getElementById('dr-injuries').value,
+    comments:document.getElementById('dr-comments').value
+  };
+
+  var {error}=await sb.from('daily_reports').insert(report);
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Submit Report';
+  if(error){
+    document.getElementById('dr-status').innerHTML='<div class="alert alert-danger">Error: '+esc(error.message)+'</div>';
+  } else {
+    document.getElementById('dr-status').innerHTML='<div class="alert alert-success"><i class="ti ti-circle-check"></i> Report submitted successfully!</div>';
+    // reset form
+    ['dr-video-lessons','dr-sick','dr-above','dr-improve','dr-injuries','dr-comments'].forEach(function(id){document.getElementById(id).value='';});
+    ['dr-social','dr-attendance'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('dr-families').value='';
+    ['m1','m2','m3','m4'].forEach(function(id){document.getElementById(id).checked=false;});
+    document.getElementById('dr-file-list').innerHTML='';
+    drUploadedFiles=[];
+  }
+}
+
+async function loadReportLog(){
+  var list=document.getElementById('report-log-list');
+  list.innerHTML='<div class="empty-state"><span class="spinner"></span></div>';
+  var dateFilter=document.getElementById('rl-date-filter').value;
+  var query=sb.from('daily_reports').select('*, profiles(name, role)').order('report_date',{ascending:false}).order('submitted_at',{ascending:false});
+  if(dateFilter)query=query.eq('report_date',dateFilter);
+  var {data,error}=await query;
+  if(!data||!data.length){list.innerHTML='<div class="empty-state"><i class="ti ti-clipboard"></i>No reports yet.</div>';return;}
+  list.innerHTML=data.map(function(r){
+    var staffName=r.profiles?r.profiles.name:'Unknown';
+    var mistakes=(r.mistakes||[]);
+    var files=(r.social_media_files||[]);
+    return '<div class="card" style="margin-bottom:0.75rem;">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">'+
+        '<div><div style="font-weight:500;font-size:15px;">'+esc(staffName)+'</div>'+
+        '<div style="font-size:12px;color:var(--text2);">'+esc(r.report_date)+' &nbsp;·&nbsp; submitted '+new Date(r.submitted_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div></div>'+
+        '<span class="badge badge-info">'+esc(r.report_date)+'</span>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">'+
+        rField('Video lesson takeaways',r.video_lessons)+
+        rField('Social media',r.social_media_post)+
+        rField('Attendance followup',r.attendance_followup)+
+        rField('Families connected',r.families_connected)+
+        rField('Sick/injured students',r.sick_injured)+
+        rField('Above & beyond',r.above_beyond)+
+      '</div>'+
+      (mistakes.length?'<div style="margin-top:10px;"><div style="font-size:12px;color:var(--text2);margin-bottom:4px;">Mistakes noted:</div>'+mistakes.map(function(m){return '<span class="badge badge-warning" style="margin-right:4px;margin-bottom:4px;">'+esc(m)+'</span>';}).join('')+'</div>':'')+ 
+      (r.improvements?'<div style="margin-top:10px;"><div style="font-size:12px;color:var(--text2);margin-bottom:3px;">Areas to improve:</div><div style="font-size:13px;">'+esc(r.improvements)+'</div></div>':'')+
+      (r.injuries?'<div style="margin-top:10px;"><div style="font-size:12px;color:var(--danger-text);margin-bottom:3px;">Injuries/incidents:</div><div style="font-size:13px;">'+esc(r.injuries)+'</div></div>':'')+
+      (r.comments?'<div style="margin-top:10px;"><div style="font-size:12px;color:var(--text2);margin-bottom:3px;">Comments:</div><div style="font-size:13px;">'+esc(r.comments)+'</div></div>':'')+
+      (files.length?'<div style="margin-top:10px;"><div style="font-size:12px;color:var(--text2);margin-bottom:4px;">Uploaded files:</div>'+files.map(function(f){return '<a href="'+esc(f.url)+'" target="_blank" class="btn btn-sm" style="margin-right:4px;margin-bottom:4px;"><i class="ti ti-download"></i> '+esc(f.name)+'</a>';}).join('')+'</div>':'')+
+    '</div>';
+  }).join('');
+}
+
+function rField(label,val){
+  if(!val&&val!==0)return '';
+  return '<div><div style="font-size:11px;color:var(--text2);margin-bottom:2px;">'+esc(label)+'</div><div style="font-size:13px;">'+esc(String(val))+'</div></div>';
+}
+
+(async function(){
+  var {data:{session}}=await sb.auth.getSession();
+  if(session)await loadApp(session.user);
+})();
+</script>
+</body>
+</html>
