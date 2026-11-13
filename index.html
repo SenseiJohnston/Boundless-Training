@@ -236,6 +236,19 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--
           <input class="form-input" type="number" id="dr-families" min="0" placeholder="0">
         </div>
         <div class="form-group">
+          <label class="form-label">Did any students have a bad experience today or is there a student that you feel is AT RISK of quitting? Name of student and reason why they are at risk.</label>
+          <textarea class="form-input" id="dr-atrisk" placeholder="Student name and reason, or write 'None'"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Did you update the Admin or a Senior Instructor that they should be added to the Student Retention Sheet?</label>
+          <select class="form-input" id="dr-retention">
+            <option value="">Select...</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+            <option value="N/A">N/A</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label class="form-label">Were there any students that were sick or injured before coming to class that we need to make note of?</label>
           <textarea class="form-input" id="dr-sick" placeholder="List names and details, or write 'None'"></textarea>
         </div>
@@ -872,6 +885,8 @@ async function submitDailyReport(){
     social_media_files:fileUrls,
     attendance_followup:document.getElementById('dr-attendance').value,
     families_connected:parseInt(document.getElementById('dr-families').value)||0,
+    at_risk_students:document.getElementById('dr-atrisk').value,
+    retention_sheet_update:document.getElementById('dr-retention').value,
     sick_injured:document.getElementById('dr-sick').value,
     above_beyond:document.getElementById('dr-above').value,
     mistakes:mistakes,
@@ -887,9 +902,10 @@ async function submitDailyReport(){
   } else {
     document.getElementById('dr-status').innerHTML='<div class="alert alert-success"><i class="ti ti-circle-check"></i> Report submitted successfully!</div>';
     // reset form
-    ['dr-video-lessons','dr-sick','dr-above','dr-improve','dr-injuries','dr-comments'].forEach(function(id){document.getElementById(id).value='';});
+    ['dr-atrisk','dr-video-lessons','dr-sick','dr-above','dr-improve','dr-injuries','dr-comments'].forEach(function(id){document.getElementById(id).value='';});
     ['dr-social','dr-attendance'].forEach(function(id){document.getElementById(id).value='';});
     document.getElementById('dr-families').value='';
+    document.getElementById('dr-retention').value='';
     ['m1','m2','m3','m4'].forEach(function(id){document.getElementById(id).checked=false;});
     document.getElementById('dr-file-list').innerHTML='';
     drUploadedFiles=[];
@@ -919,6 +935,8 @@ async function loadReportLog(){
         rField('Social media',r.social_media_post)+
         rField('Attendance followup',r.attendance_followup)+
         rField('Families connected',r.families_connected)+
+        rField('At-risk students',r.at_risk_students)+
+        rField('Retention sheet update',r.retention_sheet_update)+
         rField('Sick/injured students',r.sick_injured)+
         rField('Above & beyond',r.above_beyond)+
       '</div>'+
